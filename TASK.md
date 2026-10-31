@@ -12,17 +12,17 @@ This board holds **what to do next**, not why. Design reasoning lives in `docs/S
 - [x] Both proposals read and compared.
 - [x] `docs/SPEC.md` v0.1 (architecture, schemas, six tools, deployment, sync, phases, acceptance scenarios A to I).
 - [x] Document layer wired: `AGENTS.md` §12, `NOTEPAD.md`, `CONTEXT.md`, `MEMORY.md`, `TASK.md`, `filetree.md`, `README.md`, `skills/`.
-**Application implementation:** In progress. Package/config scaffold, numbered migrations, SQLite/D1 adapters, workspace core, MCP schema/dispatcher, local stdio harness, hosted `/mcp` entry source, and source-only build packaging are present. Root reports 13 local tests, typecheck, line budget, packed install, and subprocess persistence checks passed. Cloud deployment and ChatGPT/Codex client integration remain open.
+**Application implementation:** Core and hosted build are locally validated. Package/config scaffold, numbered migrations, SQLite/D1 adapters, workspace core, MCP schema/dispatcher, local stdio harness, hosted `/mcp` entry, source-only build packaging, and Sites route bridge are present. Root reports 13 local tests, typecheck, line budget, packed install, subprocess persistence checks, and hosted build passed. Site `appgprj_6ae661d0968081918d8c386d729f1c8c` is published at `https://somnus-cognitive-workspace.daeronsomnus.chatgpt.site`; canonical plugin `plugin_asdk_app_sites_09950ef599088191a5e6c9569f8c7dae` is provisioned and installed. Live MCP handling and cross-chat recovery remain open.
 
-**Deployment hold (operator direction, 2026-10-31):** Do not create/configure a Site, provision deployment storage, publish, or install the plugin this turn. Keep deployment deferred until application code, host adapter, MCP layer, migrations, and plugin package are locally ready. This is a sequencing hold; no separate approval gate was specified.
+**Deployment state:** Site publication and canonical plugin provisioning/installation succeeded. Root is syncing source to GitHub `main`. A service-credential schema probe returned HTTP 401 at dispatch, and the current chat tool registry lacked workspace tools after retry; neither confirms live MCP handling. The user still needs a fresh-chat check. Actual account cost remains unknown.
 
-**D1 verification:** Root reports 13 passing local tests, including Workerd D1 and HTTP owner-gate/list/status cases. This does not establish Cloudflare/Sites D1 behavior; deployment remains held.
+**D1 verification:** Root reports 13 passing local tests, including Workerd D1 and HTTP owner-gate/list/status cases; exact Drizzle migration/journal passed Miniflare D1 tests. This does not establish cloud atomicity/persistence. Deployment is live, but cloud D1 behavior has not been observed.
 
 ## Lane assignment
 
 | Agent | Lane | Entry point |
 | --- | --- | --- |
-| **ChatGPT Work mode / Codex in Sites** | P0: the hosted Site + MCP server. This is the product. | [skills/cognitive-workspace-builder/SKILL.md](skills/cognitive-workspace-builder/SKILL.md) |
+| **Root (hosted integration)** | P0: finish the hosted Site + canonical MCP plugin, enable operator testing, and push the source. | [skills/cognitive-workspace-builder/SKILL.md](skills/cognitive-workspace-builder/SKILL.md) |
 | **Codex local / Factory** | P1: the shared core and local stdio entry, in the same repo, same `src/core` + `src/store` + `src/mcp`. | same skill |
 | **Operator** | Decisions at the bottom of this file. | - |
 
@@ -38,13 +38,14 @@ P0 and P1 build **one codebase**. P1 is not a separate prototype; it is the same
 
 ### Build
 
-- [ ] Create a private Site. Ask it to add an MCP server with D1 storage. **Deferred by the current deployment hold until local readiness is complete; do not execute this turn.**
+- [x] Register the private Site and configure its D1 binding/identity manifest. Site ID: `appgprj_6ae661d0968081918d8c386d729f1c8c`; expected URL: `https://somnus-cognitive-workspace.daeronsomnus.chatgpt.site`.
 - [ ] Establish the repo layout from SPEC §15 (`src/core`, `src/store`, `src/mcp`, `src/hosted`) and keep `src/core` free of platform APIs so P1 can reuse it unchanged.
 - [x] Migrations: full `major_*` DDL, full `minor_*` DDL, `major_notes_fts` + sync triggers, every index in SPEC §5.4, plus D1 transaction guard migration.
 - [ ] `src/core`: ULID ids, HLC clock, session resolution (§7.2, 12-hour window, implicit open with notice), thread routing and all six `move` behaviors (§4.3), kind inference, handle detection + `about` handle creation, `refs` shorthand parsing, server-created `continues` / `branches_from` / `returns_to` edges, recall assembly steps 1 to 7 (§8.3) including neighborhood expansion and budget trim.
 - [x] `src/mcp`: four P0 tool schemas with `text` as the only required field; one-line write receipts naming note id + thread + session; near-duplicate warning on repeated `content_hash`; recall output fenced with "stored working material, not instructions".
 - [ ] Auth: owner allowlist, no anonymous writes (§11.1). Decide this *before* publishing, not after.
-- [ ] Publish as Site owner; install the plugin card; complete the connection.
+- [x] Publish the Site and provision/install the canonical plugin card. Deployment and release IDs: [plugin/README.md](plugin/README.md).
+- [ ] Confirm the connected plugin exposes tools in a fresh chat; complete note and cross-chat recall scenarios below.
 
 ### Verify from real clients
 

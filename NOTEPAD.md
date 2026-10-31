@@ -878,6 +878,22 @@ Track code landing from the implementation owners → update the task checklist 
 - `OBSERVED` — usage and curator skills now distinguish the current four tools from planned P3 `workspace_link` and `workspace_curate`; P0 migration, four-tool schema, and P1 line-budget checks are marked complete in TASK.
 - `PRESERVE` — deployment remains held this turn. Re-entry: `1ce67b2` → `TASK.md` current gate → complete any local readiness work; do not create/publish a Site this turn.
 
+## 2026-10-31 | Codex | deployment hold lifted | OPEN
+
+- **Operator directive:** the previous deployment hold is explicitly lifted. Finish the hosted side, deploy the canonical Site plugin, let the operator test it, and push all source to `main`.
+- **Ownership:** root owns Site creation/publication and the live deployment route; this lane keeps repository navigation and handoff docs accurate.
+- **Source/artifact split:** `src/hosted/` remains the server implementation. `site/` is planned for the deployment bridge; `plugin/` is planned for plugin instructions and metadata. Neither directory is present in the live tree at this checkpoint.
+- **Evidence boundary:** deployment is authorized but not yet recorded as completed. D1 Workerd/HTTP results are local evidence only; cloud identity, transport, storage, publication, and client behavior remain to be observed.
+- **Re-entry:** [TASK.md](TASK.md) P0 → root deployment messages → update `CONTEXT.md` and `filetree.md` as `site/` and `plugin/` artifacts land.
+
+### 2026-10-31 | CHECKPOINT | sites-scaffold-created
+
+- `OBSERVED` — `site/` now exists with a Vinext/Cloudflare scaffold, local auth helper, Worker entry, D1/schema scaffolding, and install/build/preview scripts. `site/app/page.tsx` is still a generic starter placeholder; this lane has not observed a connection to `src/hosted/` or a deployment.
+- `OBSERVED` — `plugin/` does not exist at this checkpoint; it remains planned for instructions and metadata.
+- `OBSERVED` — current scaffold includes `site/.openai/hosting.json`, `site/drizzle/0000_workspace.sql`, and `site/pnpm-lock.yaml`; these are scaffold assets, not proof of a deployed or source-wired MCP plugin.
+- `OBSERVED` — README and filetree now route to `site/`; builder guide distinguishes the Site scaffold from the hosted server source.
+- `PRESERVE` — deployment is authorized and root-owned; document the actual canonical Site/plugin, live test route, and push only when root reports them.
+
 ### 2026-10-31 | CHECKPOINT | d1-and-hosted-source-landed
 
 - `OBSERVED` — new files are present: `src/store/d1.ts`, `src/store/migrations/0002.sql`, `src/hosted/index.ts`, `scripts/build.mjs`, `tsconfig.build.json`, and `test/d1.test.ts`.
@@ -886,3 +902,11 @@ Track code landing from the implementation owners → update the task checklist 
 - `UNKNOWN` — D1 test execution is pending Terra. No D1 atomicity result is claimed yet.
 - `OBSERVED` — build config compiles source only and copies migrations to `dist`; local stdio now applies numbered migrations.
 - `PRESERVE` — deployment hold remains active until all named local-readiness conditions are met; no Site setup or publication this turn.
+
+
+## 2026-10-31 — Published ChatGPT testing release (root)
+
+- User explicitly authorized publication after the prior deployment hold. Sites deployment `appgdep_6ae662c153f481918c6aa28f86909e99` succeeded with MCP enabled, environment revision 1, and source commit `0c1527ced06a2681d3adc0d957818e624c06b952`. Durable connection identifiers are in `plugin/connection.json`; credentials are not stored.
+- Canonical Site plugin was already installed. Plugin Creator updated it to 1.0.1 and read-back verified both usage and curator skills with the existing App binding preserved. No duplicate plugin was created.
+- Local exact hosted migration, HTTP checks, and core suite pass (13 tests). A service-access live HTTP probe returned 401 at dispatch. Current chat has no workspace tools in its registry. Do not claim a live note write/recall or cross-chat continuity test; the next fresh chat with the plugin selected is the real user acceptance test.
+- Canonical source is GitHub `main`. New agents should clone with `--branch main`; use root AGENTS, CONTEXT, TASK, and site/README. Sites has a separate source mirror: open it with the supported helper and overlay canonical source rather than merging/force-pushing histories. Hosting cost remains unobserved.

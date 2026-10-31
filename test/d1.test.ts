@@ -7,30 +7,14 @@ import { D1Store, type D1Binding } from '../src/store/d1.js';
 import { Workspace } from '../src/core/workspace.js';
 import hosted from '../src/hosted/index.js';
 
-function migration(name: string): string[] {
-  const sql = readFileSync(new URL(`../src/store/migrations/${name}`, import.meta.url), 'utf8');
-  const statements: string[] = [];
-  let current = '', trigger = false;
-  for (const raw of sql.split('\n')) {
-    const line = raw.replace(/--.*$/, '').trim();
-    if (!line) continue;
-    current += `${line}\n`;
-    if (/^CREATE TRIGGER\b/i.test(line)) trigger = true;
-    if ((trigger && /^END;$/i.test(line)) || (!trigger && line.endsWith(';'))) {
-      statements.push(current); current = ''; trigger = false;
-    }
-  }
-  if (current.trim()) throw new Error('Incomplete migration statement');
-  return statements;
-}
-
 test('D1 executes workspace operations and guarded atomic transactions', async (t) => {
   const mf = new Miniflare({ modules: true, script: 'export default { fetch() { return new Response("ok") } }', d1Databases: ['DB'], compatibilityDate: '2025-01-01' });
   t.after(() => mf.dispose());
   const db = await mf.getD1Database('DB');
-  for (const name of ['0001.sql', '0002.sql']) {
-    await db.batch(migration(name).map(sql => db.prepare(sql)));
-  }
+  const migration = readFileSync(new URL('../drizzle/0000_workspace.sql', import.meta.url), 'utf8');
+  await db.batch(migration.split('--> statement-breakpoint').map(sql => sql.trim()).filter(Boolean).map(sql => db.prepare(sql)));
+  const journal = JSON.parse(readFileSync(new URL('../drizzle/meta/_journal.json', import.meta.url), 'utf8'));
+  assert.equal(journal.entries[0].tag, '0000_workspace');
   const binding = db as unknown as D1Binding;
   const environment = { DB: binding, OWNER_USER_ID: 'owner', WORKSPACE_TIMEZONE: 'UTC' };
   const request = (body: string, headers: Record<string, string> = { 'content-type': 'application/json', 'oai-authenticated-user-id': 'owner' }) =>
@@ -40,6 +24,11 @@ test('D1 executes workspace operations and guarded atomic transactions', async (
   assert.equal((await hosted.fetch(new Request('https://example.test/mcp', { headers: { 'oai-authenticated-user-id': 'owner' } }), environment)).status, 405);
   assert.equal((await hosted.fetch(request('{}', { 'content-type': 'text/plain', 'oai-authenticated-user-id': 'owner' }), environment)).status, 415);
   assert.equal((await hosted.fetch(request('x'.repeat(128001)), environment)).status, 413);
+  const privateEnvironment = { DB: binding, TRUST_PRIVATE_SITE: 'true' };
+  const discovery = request(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }), { 'content-type': 'application/json' });
+  assert.equal((await hosted.fetch(discovery, privateEnvironment)).status, 200);
+  const anonymousWrite = request(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'workspace_note', arguments: { text: 'forbidden' } } }), { 'content-type': 'application/json' });
+  assert.equal((await hosted.fetch(anonymousWrite, privateEnvironment)).status, 403);
   for (const method of ['tools/list', 'tools/call']) {
     const response = await hosted.fetch(request(JSON.stringify({ jsonrpc: '2.0', id: 1, method, params: { name: 'workspace_status', arguments: {} } })), environment);
     assert.equal(response.status, 200);

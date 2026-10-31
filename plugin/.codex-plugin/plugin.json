@@ -1,0 +1,19 @@
+{
+  "apps": "./.app.json",
+  "author": {
+    "name": "App developer"
+  },
+  "description": "Private conversation continuity and research notepad for ChatGPT.",
+  "interface": {
+    "capabilities": [],
+    "category": "Other",
+    "defaultPrompt": null,
+    "developerName": "App developer",
+    "displayName": "Cognitive Workspace",
+    "longDescription": "Private conversation continuity and research notepad for ChatGPT.",
+    "shortDescription": "Private conversation continuity and research notepad for ChatGPT.",
+    "websiteURL": "https://somnus-cognitive-workspace.daeronsomnus.chatgpt.site"
+  },
+  "name": "dev-09950ef599088191a5e6c9569f8c7dae",
+  "version": "1.0.1"
+}

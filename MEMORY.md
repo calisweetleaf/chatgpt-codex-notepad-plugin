@@ -100,3 +100,13 @@ The point of the document layer is a codebase that is **proactively helpful** ra
 - Rules route; they do not forbid novelty.
 
 Hierarchy, per `NOTEPAD.md`: `AGENTS.md` → `NOTEPAD.md` → `CONTEXT.md` → `MEMORY.md`.
+
+## `sites-published-2026-10-31` — deployment identifiers and verification boundary
+
+**Status:** OBSERVED via root's native Sites/Plugin Creator work · **Date:** 2026-10-31
+
+- Site project `appgprj_6ae661d0968081918d8c386d729f1c8c`, URL `https://somnus-cognitive-workspace.daeronsomnus.chatgpt.site`, deployment `appgdep_6ae662c153f481918c6aa28f86909e99`, version `appgprj_6ae661d0968081918d8c386d729f1c8c~appgver_10a9a41eeeac8191bba2ff6672ea46a5`, source `0c1527ced06a2681d3adc0d957818e624c06b952`. MCP enabled; environment revision 1.
+- Canonical plugin ID `plugin_asdk_app_sites_09950ef599088191a5e6c9569f8c7dae`, installed; release `pluginrel_6ae66309e2b88191b922c50853ac4d5d`, v1.0.1. Usage and curator skill readback was verified.
+- A schema probe with the Site service credential returned HTTP 401 at dispatch for `server/discover` and `tools/list`; do not treat that as an MCP-handler test or infer a server defect. Current chat tool registry lacked workspace tools after retry.
+- No user MCP call, cross-chat note recovery, cloud D1 persistence, or actual account cost is confirmed.
+- Source update procedure: use the supported Site source helper in a separate scratch checkout; overlay the canonical GitHub `main` archive while preserving `mirror.git`; build/package/push there. Keep both hosting manifests identical, preserve plugin/App IDs, and do not merge or force-push the separate histories. See `plugin/README.md`.

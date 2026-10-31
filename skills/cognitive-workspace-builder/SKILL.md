@@ -57,7 +57,7 @@ Facts from OpenAI docs as of 2026-10-31 (see SPEC §3 for sources):
 - Pro and personal plans cannot share a Site-hosted plugin with other users.
 - Hosting cost: the docs say running/hosting usage is billed separately and waived for Enterprise. The operator expects free hosting. Confirm on the real account and record the result in SPEC §3.
 
-**Current deployment hold (operator direction, 2026-10-31):** Do not create/configure a Site, provision deployed storage, publish, or install the plugin during this turn. Continue local work. Deployment may resume after the application code, host adapter, MCP layer, migrations, and plugin package are locally ready. This is a sequencing hold, not a separate approval gate.
+**Current deployment state (2026-10-31):** Site `appgprj_6ae661d0968081918d8c386d729f1c8c` and canonical plugin `plugin_asdk_app_sites_09950ef599088191a5e6c9569f8c7dae` are published/provisioned; deployment and release details are in `plugin/README.md`. Keep `src/hosted/` as server source. `site/app/mcp/route.ts` bridges to the hosted handler; `scripts/build-hosted.mjs` checks hosting identity manifests. A service-credential schema probe returned HTTP 401 at dispatch, and the current chat registry lacked workspace tools after retry; do not claim live MCP handling or cross-chat recovery. Source updates use the separate Sites mirror helper procedure in `plugin/README.md`: start from GitHub `main`, preserve `mirror.git`, overlay the canonical Git archive, and never merge or force-push the separate histories. Refresh the existing plugin identity; do not create a duplicate.
 
 Steps for ChatGPT Work mode or Codex:
 

@@ -1,8 +1,8 @@
 # AGENTS.md — Cognitive Workspace Plugin
 
-> **OPERATOR UPDATE — 2026-10-31: AUTONOMY AND GIT WORKFLOW**
+> **OPERATOR UPDATE — 2026-10-31: DEPLOYMENT AUTHORIZATION AND GIT WORKFLOW**
 >
-> Work directly on `main`. Commit completed work and push to `origin/main`; do not create feature branches, worktrees, or pull requests for routine work. Resolve implementation choices from this operating contract, `docs/SPEC.md`, `TASK.md`, and live source rather than requesting routine operator input. Keep the document layer and file map current for subsequent agents. Preserve code quality and project scope while progressing autonomously. The current deployment hold remains in force until local implementation, contracts, migrations, and packaging are ready; Git pushes do not authorize Site publication.
+> Work directly on `main`. Commit completed work and push to `origin/main`; do not create feature branches, worktrees, or pull requests for routine work. Resolve implementation choices from this operating contract, `docs/SPEC.md`, `TASK.md`, and live source rather than requesting routine operator input. Keep the document layer and file map current for subsequent agents. Preserve code quality and project scope while progressing autonomously. The latest operator direction explicitly lifts the previous deployment hold: finish the hosted path, deploy the canonical Site plugin, let the operator test it, and push source to `main`. Root owns Site actions. Record deployment outcomes only when observed.
 
 > **DAERON / MORPHEUS — OPERATOR NOTE (HOSTING, REPOSITORY PURPOSE, AND PRIORITY)**
 >
@@ -14,7 +14,7 @@
 
 > **Workspace operating contract for Factory, Codex, and any other implementation agent.**
 >
-> **Project status:** specification complete; implementation is in progress. The package/config scaffold, numbered migrations, SQLite and D1 stores, workspace core, MCP schema/dispatcher, local stdio harness, hosted entry source, and source-only build packaging are present. Root reports all 13 local tests, typecheck, line budget, clean packed install, and subprocess persistence checks passing. Site deployment and real-client integration remain unverified. See §12 and `CONTEXT.md`.
+> **Project status:** specification complete; the Sites deployment and canonical private plugin are published. The package/config scaffold, numbered migrations, SQLite and D1 stores, workspace core, MCP schema/dispatcher, local stdio harness, hosted entry, source-only build packaging, and Sites app are present. Site project `appgprj_6ae661d0968081918d8c386d729f1c8c` is live at `https://somnus-cognitive-workspace.daeronsomnus.chatgpt.site`; canonical plugin ID `plugin_asdk_app_sites_09950ef599088191a5e6c9569f8c7dae` is provisioned. Root reports all 13 local tests, typecheck, line budget, clean packed install, subprocess persistence checks, and hosted build passing. Live MCP tool handling and cross-chat recovery remain unverified. See §12 and `CONTEXT.md`.
 > **Primary user:** ChatGPT itself; Codex and other agents are secondary clients.
 > **First deliverable:** `SPEC.md`, produced only after reading both existing proposals. *(Delivered: [`docs/SPEC.md`](docs/SPEC.md). Next work is tracked in [`TASK.md`](TASK.md).)*
 
@@ -351,7 +351,9 @@ Each surface has one job. Read the one the task points at; do not read everythin
 | `src/core/workspace.ts` | Workspace note/session/thread and recall engine. | Core implementation. |
 | `src/mcp/server.ts` | Four tool schemas, validation, dispatch, and JSON-RPC routing. | MCP contract implementation; host transport remains unverified. |
 | `src/local/stdio.ts` | JSONL stdin/stdout adapter over internal RPC and SQLite. | Root reports subprocess write/restart/reopen/query passed; SDK-backed product entry remains open. |
-| `src/hosted/index.ts` | Owner-ID-gated POST `/mcp` entry with bounded request body. | Hosted source exists; Sites identity/transport and deployment remain unverified. |
+| `src/hosted/index.ts` | Owner-ID-gated POST `/mcp` entry with bounded body. | Published through Sites; service-credential schema probe returned 401 at dispatch, so live handler/tool behavior is unverified. |
+| `site/` | Vinext/Cloudflare Sites app, MCP route bridge, Worker and D1 scaffolding. | Published Site project ID/URL and version are in `CONTEXT.md`; cloud persistence remains unverified. |
+| `plugin/` | Plugin Creator manifests, skill copies, and deployment/source-mirror handoff. | Canonical plugin is provisioned/installed; preserve its existing App ID on refresh. See `plugin/README.md`. |
 | `src/store/` | Database contract, SQLite/D1 adapters, and numbered migrations. | Local Workerd tests pass per root; cloud D1 behavior is unobserved. |
 | `test/` | SQLite workspace/MCP tests and D1 adapter/HTTP tests. | Root reports all 13 tests pass locally; no cloud deployment evidence. |
 | `scripts/` | Build packaging and handwritten test/source line budget. | Source-only build copies migrations; root reports packed install succeeds. |

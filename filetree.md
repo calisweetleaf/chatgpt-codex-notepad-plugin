@@ -25,6 +25,7 @@ Enter at [AGENTS.md](AGENTS.md) §12 → [CONTEXT.md](CONTEXT.md) → the surfac
 ├── tsconfig.build.json          source-only TypeScript build configuration
 ├── scripts
 │   ├── build.mjs                clean source build and copy migrations to dist
+│   ├── build-hosted.mjs          verifies hosting identity and builds/copies the Sites artifact
 │   └── count-lines.mjs          enforces the handwritten test/source line budget
 ├── src
 │   ├── core
@@ -34,7 +35,7 @@ Enter at [AGENTS.md](AGENTS.md) §12 → [CONTEXT.md](CONTEXT.md) → the surfac
 │   ├── local
 │   │   └── stdio.ts             JSONL stdin/stdout harness over the internal RPC + SQLite
 │   ├── hosted
-│   │   └── index.ts             owner-ID-gated bounded POST /mcp entry; not deployed
+│   │   └── index.ts             owner-ID-gated bounded POST /mcp entry; deployed via Sites
 │   └── store
 │       ├── database.ts          async database interface
 │       ├── d1.ts                snapshot reads + revision-guarded atomic batch
@@ -42,6 +43,25 @@ Enter at [AGENTS.md](AGENTS.md) §12 → [CONTEXT.md](CONTEXT.md) → the surfac
 │       └── migrations
 │           └── 0001.sql         initial major/minor schema, FTS triggers, indexes, session state
 │           └── 0002.sql         D1 transaction guard and revision schema
+├── site
+│   ├── app/page.tsx              minimal Cognitive Workspace service landing page
+│   ├── app/mcp/route.ts          dispatches GET/POST to src/hosted/index.ts
+│   ├── app/chatgpt-auth.ts       Sites identity helper
+│   ├── db/                       D1 binding/schema scaffold
+│   ├── drizzle/0000_workspace.sql schema-only D1 migration copy
+│   ├── worker/index.ts           Vinext Worker entry
+│   ├── scripts/                  Sites install/build/preview lifecycle helpers
+│   ├── .openai/hosting.json       registered Sites identity and D1 binding manifest
+│   ├── package.json              Sites app dependencies and local commands
+│   ├── pnpm-lock.yaml            locked scaffold dependencies
+│   └── README.md                 Site identity, route/build and source-mirror handoff
+├── plugin
+│   ├── README.md                 published Site/plugin identities and mirror update workflow
+│   ├── plugin.json                Plugin Creator manifest, release v1.0.1
+│   ├── .app.json                  canonical App connection binding
+│   ├── .codex-plugin/plugin.json  Codex plugin manifest
+│   ├── connection.json            non-secret Site/plugin IDs, URLs, version, source
+│   └── skills/                    usage and curator skills overlaid by Plugin Creator
 ├── test
 │   ├── d1.test.ts               Workerd D1 + HTTP owner-gate/list/status tests
 │   └── workspace.test.ts        SQLite behavior + in-process MCP RPC coverage
@@ -63,17 +83,18 @@ Enter at [AGENTS.md](AGENTS.md) §12 → [CONTEXT.md](CONTEXT.md) → the surfac
 └── filetree.md                  <this-file>
 ```
 
-## Planned but not yet created
+## Remaining implementation and deployment surfaces
 
-Planned code layout, from [docs/SPEC.md](docs/SPEC.md) §15 and [skills/cognitive-workspace-builder/SKILL.md](skills/cognitive-workspace-builder/SKILL.md):
+The core, stores, four-tool MCP server, local stdio harness, hosted entry, and Sites route/build bridge are present. Root reports 13 local tests and the hosted build pass. Site `appgprj_6ae661d0968081918d8c386d729f1c8c` is published at `https://somnus-cognitive-workspace.daeronsomnus.chatgpt.site`; deployment/version/source and canonical plugin release IDs are in `plugin/README.md`. Live MCP schema/HTTP behavior and cross-chat note recovery remain unverified. The Site migration file is a schema copy; do not infer cloud migration state from it.
 
-The shared scaffold, workspace core, MCP schema/dispatcher, local stdio harness, hosted entry source, SQLite/D1 stores, numbered migrations, and both test files are present. Root reports all 13 local tests pass. Cloud D1/Sites behavior, deployment, and real-client integration remain unverified.
+## Deployment handoff surfaces
+
+- `src/hosted/` — primary hosted server source.
+- `site/` — Sites app and route bridge; `scripts/build-hosted.mjs` builds its deployable artifact. Future source refreshes follow the separate-mirror procedure in `plugin/README.md`.
+- `plugin/` — Plugin Creator manifests, canonical skill copies, identity record, and source-mirror handoff. Preserve existing App ID on updates.
 
 ```
-src/core/   workspace semantics, no platform APIs      src/hosted/  ChatGPT Sites entry + D1
-src/store/  Major/MinorStore interfaces + adapters      src/local/   cwp CLI, daemon, stdio MCP
-src/mcp/    tool schemas, descriptions, rendering      src/worker/  optional jobs (minor only)
-test/       behavior + store-contract + integrity
+src/worker/  optional jobs (minor only)
 ```
 
 ## Notes

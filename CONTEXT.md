@@ -11,10 +11,10 @@ Keep entries short and keyed. If an entry needs a paragraph, it belongs in `MEMO
 
 - **Gate:** P0, the hosted vertical slice on ChatGPT Sites ([TASK.md](TASK.md) → P0).
 - **Expected verdict:** a note written in one ChatGPT chat is recoverable from a different chat, and Codex sees the same workspace.
-- **Last observed verdict:** implementation in progress. Numbered migrations, SQLite/D1 stores, workspace core, MCP server, local stdio harness, hosted `/mcp` entry source, and source-only build packaging are present. Root reports 13 local tests, typecheck, line budget, packed install, and subprocess persistence checks passed. No cloud deployment or ChatGPT/Codex client integration has occurred.
+- **Last observed verdict:** Site publication succeeded. Project `appgprj_6ae661d0968081918d8c386d729f1c8c` is live at [somnus-cognitive-workspace.daeronsomnus.chatgpt.site](https://somnus-cognitive-workspace.daeronsomnus.chatgpt.site), deployment `appgdep_6ae662c153f481918c6aa28f86909e99`, version `appgprj_6ae661d0968081918d8c386d729f1c8c~appgver_10a9a41eeeac8191bba2ff6672ea46a5`, source `0c1527ced06a2681d3adc0d957818e624c06b952`, MCP enabled, env revision 1. Plugin Creator provisioned and installed canonical app `plugin_asdk_app_sites_09950ef599088191a5e6c9569f8c7dae`; release `pluginrel_6ae66309e2b88191b922c50853ac4d5d` is v1.0.1, and deployed skill readback was verified. A schema probe using the Site service credential received HTTP 401 at dispatch for `server/discover` and `tools/list`; this does not establish a server defect or exercise MCP handling. The current chat tool registry did not show workspace tools after retry. Cross-chat note recovery is still untested.
 - **Validation report:** root reran all 13 tests locally, including Workerd D1 and HTTP owner-gate/list/status coverage; typecheck and line budget pass (457 application lines, 234 test lines). Root also reports clean `npm pack` install with `--omit=dev` outside the repo and two compiled stdio processes persisting/retrieving through numbered migrations. These results do not establish cloud D1 or Sites behavior.
-- **Deployment hold:** no Site creation, deployment, D1 provisioning, publication, or plugin installation this turn. Resume only after application code, host adapter, MCP layer, migrations, and plugin package are locally ready. This is a sequencing hold, not a separate approval gate.
-- **Next action:** complete any remaining local contract and packaging readiness work; D1 tests and packed installation have passed locally. Preserve the deployment hold this turn. In later work, once local readiness is complete, resume P0 and record cloud behavior from direct observations.
+- **Deployment:** publishing and canonical plugin provisioning succeeded; root is syncing the source repository to `main`. The operator can test the installed plugin, but no cross-chat persistence result is recorded yet.
+- **Next action:** user performs a fresh-chat plugin availability and note→recall check; record outcomes without inferring server behavior from the service-credential 401 or missing current-chat tool listing. Root is syncing GitHub `main`. Preserve the separate Site source mirror workflow described in `plugin/README.md`.
 
 ## Authoritative surfaces
 
@@ -43,8 +43,10 @@ Keep entries short and keyed. If an entry needs a paragraph, it belongs in `MEMO
 ## Hazards
 
 - `hosting-cost` — operator expects free Sites hosting; docs say hosting usage is separate and waived only for Enterprise. Unresolved. Blocks operator decision 1. → `MEMORY.md` → `sites-facts-2026-10-31`.
-- `sites-runtime-unknown` — Site server runtime, MCP transport, DB binding count, and handler identity are all unobserved. Everything in `src/hosted` is provisional until P0 records them.
-- `d1-cloud-parity` — Workerd D1 and HTTP tests pass locally; Cloudflare/Sites D1 atomicity and identity forwarding remain unobserved until a later deployment.
+- `sites-runtime-unknown` — Site publication and plugin provisioning are observed; the service-credential probe returned 401 at dispatch, and no live MCP handling, cloud persistence, or client use is confirmed.
+- `sites-identity` — `TRUST_PRIVATE_SITE=true` and timezone `America/Chicago` were set through the native Sites tool. Private-site trust allows schema discovery without visitor identity; tool calls require forwarded user ID. Owner ID is optional. Live forwarding check is pending.
+- `d1-cloud-parity` — Workerd D1 and HTTP tests pass locally; no cloud atomicity/persistence or cross-chat recovery result is recorded yet.
+- `sites-cost` — actual account cost is still unknown; do not infer from docs or successful publication.
 - `doc-drift` — `NOTEPAD.md` references `CONTEXT.md` and `MEMORY.md`; all three must stay in step with `TASK.md` or the routing layer lies.
 
 ## Deferred queue

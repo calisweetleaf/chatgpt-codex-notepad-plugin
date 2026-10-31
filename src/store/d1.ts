@@ -31,13 +31,12 @@ export class D1Store implements Database {
         const session = this.binding.withSession('first-primary');
         this.active = { session, writes: [] };
         try {
-          const revision = (await this.all("SELECT value FROM major_meta WHERE key='transaction_revision'"))[0]?.value;
-          if (revision === undefined) throw new Error('D1 migrations are not current');
+          const revision = (await this.all("SELECT coalesce((SELECT value FROM major_meta WHERE key='transaction_revision'),'0') AS value"))[0]!.value;
           const result = await work(this);
           const token = crypto.randomUUID();
-          const guard = session.prepare("INSERT INTO major_transaction_guard(id,valid) VALUES(?,CASE WHEN (SELECT value FROM major_meta WHERE key='transaction_revision')=? THEN 1 ELSE 0 END)").bind(token, revision);
+          const guard = session.prepare("INSERT INTO major_transaction_guard(id,valid) VALUES(?,CASE WHEN coalesce((SELECT value FROM major_meta WHERE key='transaction_revision'),'0')=? THEN 1 ELSE 0 END)").bind(token, revision);
           const writes = this.active.writes;
-          const bump = session.prepare("UPDATE major_meta SET value=cast(cast(value AS INTEGER)+1 AS TEXT) WHERE key='transaction_revision'");
+          const bump = session.prepare("INSERT INTO major_meta(key,value) VALUES('transaction_revision','1') ON CONFLICT(key) DO UPDATE SET value=cast(cast(value AS INTEGER)+1 AS TEXT)");
           const cleanup = session.prepare('DELETE FROM major_transaction_guard WHERE id=?').bind(token);
           await session.batch([guard, ...writes, ...(writes.length ? [bump] : []), cleanup]);
           return result;

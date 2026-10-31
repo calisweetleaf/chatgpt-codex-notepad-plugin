@@ -3,7 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "files": ["dist", "skills/cognitive-workspace-usage", "skills/cognitive-workspace-curator", "README.md"],
+  "files": [
+    "dist",
+    "skills/cognitive-workspace-usage",
+    "skills/cognitive-workspace-curator",
+    "README.md"
+  ],
   "engines": {
     "node": ">=22.13.0"
   },
@@ -11,7 +16,8 @@
     "build": "node scripts/build.mjs",
     "typecheck": "tsc --noEmit",
     "test": "npm run typecheck && node --import tsx --test 'test/**/*.test.ts' && npm run count-lines",
-    "count-lines": "node scripts/count-lines.mjs"
+    "count-lines": "node scripts/count-lines.mjs",
+    "build:hosted": "node scripts/build-hosted.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250525.0",

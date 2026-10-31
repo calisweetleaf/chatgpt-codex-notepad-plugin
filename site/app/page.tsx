@@ -1,0 +1,1 @@
+export default function Home() { return <main style={{maxWidth:640,margin:"80px auto",padding:24,fontFamily:"system-ui"}}><h1>Cognitive Workspace</h1><p>Private persistent conversation continuity for ChatGPT.</p><p>Use the connected plugin in chat to open a session, write a note, and recall a research thread.</p><code>POST /mcp</code></main>; }

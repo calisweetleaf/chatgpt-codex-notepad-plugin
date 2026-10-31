@@ -1,0 +1,25 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "dev-09950ef599088191a5e6c9569f8c7dae",
+  "version": "1.0.1",
+  "description": "Private conversation continuity and research notepad for ChatGPT.",
+  "author": {
+    "name": "App developer"
+  },
+  "extensions": {
+    "com.openai": {
+      "apps": "./.app.json",
+      "interface": {
+        "capabilities": [],
+        "category": "Other",
+        "defaultPrompt": null,
+        "developerName": "App developer",
+        "displayName": "Cognitive Workspace",
+        "longDescription": "Private conversation continuity and research notepad for ChatGPT.",
+        "shortDescription": "Private conversation continuity and research notepad for ChatGPT.",
+        "websiteURL": "https://somnus-cognitive-workspace.daeronsomnus.chatgpt.site"
+      },
+      "requires_local_executor": false
+    }
+  }
+}
