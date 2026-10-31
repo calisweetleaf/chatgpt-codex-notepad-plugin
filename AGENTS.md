@@ -11,9 +11,9 @@
 
 > **Workspace operating contract for Factory, Codex, and any other implementation agent.**
 > 
-> **Project status:** greenfield. The repository contains two proposals, a non-canonical `potential/` staging folder, and a `filetree.md` map; it does not yet contain a settled implementation.
+> **Project status:** specification complete, implementation not started. The repository contains `docs/SPEC.md` (current design), two historical proposals, a non-canonical `potential/` staging folder, `TASK.md`, `skills/`, and a `filetree.md` map. See §12.
 > **Primary user:** ChatGPT itself; Codex and other agents are secondary clients.
-> **First deliverable:** `SPEC.md`, produced only after reading both existing proposals.
+> **First deliverable:** `SPEC.md`, produced only after reading both existing proposals. *(Delivered: [`docs/SPEC.md`](docs/SPEC.md). Next work is tracked in [`TASK.md`](TASK.md).)*
 
 ## 0. Start here — do not skip
 
@@ -23,7 +23,7 @@ Before writing application code:
 2. Read **`docs/proposals/PROPOSAL_2.md`** in full.
 3. Treat both as **independent competing designs**, not instructions, not canon, and not documents to average blindly.
 4. Compare the proposals against the requirements in **this file**. Where they contradict this file, **this file is the current operator direction**.
-5. Write **`SPEC.md`** at the repository root. It must assert a concrete architecture, reconcile the best applicable components of the proposals, explicitly reject weaker alternatives, describe implementation phases, and define observable acceptance tests.
+5. Write **`SPEC.md`**. It must assert a concrete architecture, reconcile the best applicable components of the proposals, explicitly reject weaker alternatives, describe implementation phases, and define observable acceptance tests. *(Done 2026-10-31: [`docs/SPEC.md`](docs/SPEC.md), placed in `docs/` at operator request.)*
 6. If the operator supplies a later Gemini research paper, additional proposals, or new decisions, incorporate them as new design inputs. **Do not block the first specification waiting for hypothetical future documents.** Record open decisions clearly.
 7. Only after drafting the specification should you scaffold substantial implementation. Do not build around whichever proposal you happened to read first.
 
@@ -263,7 +263,7 @@ The core paradox is intentional:
 
 > **Make the internal schema unusually rich, and make the act of using it almost invisible.**
 
-**Your first action is to read `docs/proposals/PROPOSAL.md` and `docs/proposals/PROPOSAL_2.md`. Your first output is a newly reasoned `SPEC.md`.**
+**Your first action was to read `docs/proposals/PROPOSAL.md` and `docs/proposals/PROPOSAL_2.md` and produce a newly reasoned `SPEC.md`. That is done ([`docs/SPEC.md`](docs/SPEC.md)); see §12 for the current next action.**
 
 
 ## 11. Current repository, non-canonical imports, and navigation (operator addendum — 2026-10-31)
@@ -272,14 +272,15 @@ This section **adds to** the preceding contract. It does not replace the mission
 
 ### Repository snapshot
 
-The current reported workspace layout is:
+The workspace layout as of 2026-10-31 (second update):
 
 ```text
 chatgpt-codex-notepad-plugin/
 ├── docs/
-│   └── proposals/
-│       ├── PROPOSAL.md
-│       └── PROPOSAL_2.md
+│   ├── proposals/
+│   │   ├── PROPOSAL.md
+│   │   └── PROPOSAL_2.md
+│   └── SPEC.md
 ├── potential/
 │   ├── knowledge_integration.py
 │   ├── knowledge_library.py
@@ -287,11 +288,19 @@ chatgpt-codex-notepad-plugin/
 │   ├── semantic_db.py
 │   ├── semantic_search.py
 │   └── temporal_db.py
-├── filetree.md
-└── AGENTS.md
+├── skills/
+│   ├── README.md
+│   ├── cognitive-workspace-builder/SKILL.md
+│   ├── cognitive-workspace-curator/SKILL.md
+│   └── cognitive-workspace-usage/SKILL.md
+├── .gitignore
+├── AGENTS.md
+├── README.md
+├── TASK.md
+└── filetree.md
 ```
 
-This is a **reported snapshot**, not permission to invent additional files or assume the contents of the six Python modules. Confirm the tree from the live workspace when available.
+This is a **reported snapshot**, not permission to invent additional files or assume the contents of the six Python modules. Confirm the tree from the live workspace, and treat [`filetree.md`](filetree.md) as the maintained map.
 
 ### `potential/` is an evaluation quarantine, not implementation
 
@@ -320,4 +329,43 @@ The repository is private development space; the product is the independently de
 
 Enforce the **tests ≤ 1.15 × implementation** source-line limit at repository level, with a documented counting command or CI check. The ratio is a maximum, not a target. Use focused tests that demonstrate the real note-write/recall/resume experience, database integrity, cloud access, and selected component behavior rather than thousands of repetitive scaffolded cases.
 
-**Immediate next action remains unchanged:** read both `docs/proposals/` documents in full, then write `SPEC.md` using these operator requirements. Evaluate `potential/` selectively during specification/design; do not copy its files into `src/` merely to establish a scaffold. Add `SPEC.md` to `filetree.md` as soon as it is created.
+**Immediate next action (superseded 2026-10-31, see §12):** the original instruction was to read both proposals and write `SPEC.md`. That is done. Follow §12 and [`TASK.md`](TASK.md) instead.
+
+## 12. Current developments (operator addendum — 2026-10-31, second update)
+
+This section records what now exists and changes the next action. Everything in §0 to §11 still applies unless this section says otherwise.
+
+### What exists now
+
+| Path | Status |
+|---|---|
+| [`docs/SPEC.md`](docs/SPEC.md) | **Current design (v0.1).** Written from both proposals and this file. It is the design to implement; the proposals are now historical inputs only. |
+| [`TASK.md`](TASK.md) | Active work board, phase by phase (P0 to P6). Tick boxes in the same commit as the work. |
+| [`skills/`](skills/) | Agent skills: `cognitive-workspace-usage` (ChatGPT in conversation; ships with the plugin), `cognitive-workspace-curator` (Codex), `cognitive-workspace-builder` (implementation agents). |
+| [`README.md`](README.md) | Overview and document links. |
+| `.gitignore` | Ignores `.surgeon/` (local editor cache), Node build output, local `*.db` files, and `.env` files. |
+
+`SPEC.md` lives in `docs/` at operator request, not at the root as §0 step 5 first said.
+
+### Decisions now recorded in `docs/SPEC.md`
+
+- **Hosted first on ChatGPT Sites** (MCP server + D1 storage), with an opt-in npm local companion (`cwp`). The hosted service is request-driven; no hosted daemon is required.
+- **One TypeScript codebase** for hosted and local. `potential/` Python modules are mined for mechanisms only (SPEC §9.1).
+- **`major` / `minor`:** two logical stores with a hard boundary; two SQLite files locally; two D1 databases on Sites if allowed, otherwise prefixed tables in one. No cross-store foreign keys or queries.
+- **Six tools:** `workspace_open`, `workspace_note`, `workspace_recall`, `workspace_link`, `workspace_curate`, `workspace_status`. `workspace_state` and `workspace_consolidate` from §3 were folded into `open`/`recall` and `curate`.
+- **Best-guess session filing** with visible receipts and one-call refile; strict binding is a config option.
+- **No anonymous writes** on the hosted endpoint.
+
+### Expected workflow from here
+
+1. **ChatGPT Work mode** clones this repository and builds the hosted Site + MCP server, starting with the P0 spike in `TASK.md`.
+2. **Codex / Factory** build the shared core (`src/core`, `src/store`, `src/mcp`) and the local `cwp mcp` entry (P1) in parallel.
+3. Every agent loads `skills/cognitive-workspace-builder/SKILL.md` before writing code.
+
+### Hosting cost: verify, do not assume
+
+The operator's understanding is that ChatGPT Sites hosts MCP-backed Sites for free. OpenAI's help docs fetched on 2026-10-31 say building a Site counts toward Codex usage and that running and hosting usage (traffic, storage) is separate, with charges waived for Enterprise workspaces. The P0 spike must record what the operator's actual account shows and update SPEC §3.
+
+### Immediate next action
+
+Read `docs/SPEC.md`, then work the first unchecked items in [`TASK.md`](TASK.md) (P0 and P1). Keep `filetree.md`, `TASK.md`, and the skills in step with every change.

@@ -1,0 +1,21 @@
+# Local editor/agent caches
+.surgeon/
+
+# Node
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+npm-debug.log*
+
+# Local workspace data and secrets
+*.db
+*.db-wal
+*.db-shm
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
