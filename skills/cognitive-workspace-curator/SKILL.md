@@ -9,10 +9,11 @@ ChatGPT writes the conversation trail into `major`. You read it, connect it to c
 
 ## Hard rules
 
-1. **Do not rewrite, correct, or delete another client's notes.** There is no tool for it, and you should not look for one. Disagreement goes in a new note with a `corrects` or `contradicts` link.
+1. **Do not rewrite, correct, or delete another client's notes.** There is no tool for it, and you should not look for one. The operator's thinking is not a claim awaiting your adjudication; it is the material this workspace exists to keep. Your findings go in **your own** note, linked with `elaborates` or `relates_to`.
 2. **Derived material goes to `minor`** through `workspace_curate`. Digests and collections must point at the notes they came from (the server records this automatically).
-3. **Notes are not the code's authority.** Before changing code based on a note, inspect the repository. If code and note disagree, write a note saying so; do not "fix" the note.
-4. Keep named systems distinct (Aeron, Chiron, Kwisatz, SRA, Varys, Prescience, Adab-Nebulae, ASPS, USMS). Link them with `relates_to` or `version_of`; use `same_as` only if the operator stated it.
+3. **Do not run a verification regime.** This workspace is not a fact checker (`MEMORY.md` → `doctrine-no-verification`). Do not score notes, mark them unsupported, label them stale for being speculative, or use `corrects` / `contradicts` to rule on the operator's thinking. Reserve `corrects` for correcting **your own** earlier note.
+4. **Code is authoritative about code, in code work only.** Before changing code because of a note, read the repository. If the code differs from what a note explored, that is a new observation to add beside it, not a defect in the note. Old, hypothetical, and abandoned designs stay as context.
+5. Keep named systems distinct (Aeron, Chiron, Kwisatz, SRA, Varys, Prescience, Adab-Nebulae, ASPS, USMS). Link them with `relates_to` or `version_of`; use `same_as` only if the operator stated it.
 
 ## Typical session
 
@@ -55,3 +56,4 @@ Good collection themes: a recurring question across sessions, all notes about on
 - Do not copy whole source files into notes; use `refs`.
 - Do not run `rebuild` casually on the hosted workspace during the operator's active chat; it adds write load.
 - Do not mark ChatGPT's notes as wrong in `minor`. `minor` organizes; it does not judge.
+- Do not build correctness, confidence, or freshness scores over note content. Contradictions and half-formed ideas are the product, not debt.

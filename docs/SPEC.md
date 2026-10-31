@@ -695,7 +695,7 @@ Only `major` syncs. `minor` is rebuilt per node.
 
 | Phase | Goal | Done when |
 | --- | --- | --- |
-| **P0 Sites spike** (runs alongside P1) | Confirm Sites MCP transport and runtime, D1 binding count, identity at tool calls, scheduled work, hosting cost on the operator's plan. | A trivial `ping` + `echo_write` MCP tool on a private Site, called from ChatGPT and from Codex, with results written into this spec. |
+| **P0 Hosted vertical slice** (runs alongside P1) | The real hosted server on a private Site: full `major` DDL, `minor` tables created, and `workspace_open` / `note` / `recall` / `status`. Platform unknowns (runtime, MCP transport, D1 binding count, handler identity, scheduled work, outbound HTTP, real hosting cost) are recorded while building, not by a throwaway spike. | Operator writes a note in one ChatGPT chat and recovers the thread from a different chat; Codex sees the same workspace; §3 has no unverified row that blocks P2. Checklist in [`TASK.md`](../TASK.md). |
 | **P1 Core vertical slice (local)** | `workspace_open`, `workspace_note`, `workspace_recall`, `workspace_status` on local SQLite via `cwp mcp` stdio. | Scenarios A, D, I pass through a real MCP client. |
 | **P2 Hosted** | Same core on Sites with D1 and auth. | ChatGPT writes in chat 1, a new chat 2 recalls it; Codex reads the same notes. |
 | **P3 Structure and curation** | `move` semantics, handles, edges, `workspace_link`, `workspace_curate`, `minor` rebuild. | Scenarios B, C, E, F pass. |
@@ -753,3 +753,4 @@ test/      scripts/count-lines.mjs   package.json   tsconfig.json
 ## 19. Changelog
 
 - 2026-10-31: v0.1 drafted from both proposals, `AGENTS.md`, `potential/` outlines, and current Sites/plugin documentation. No code yet.
+- 2026-10-31: §15 P0 rescoped from a `ping` + `echo_write` spike to the full hosted vertical slice, at operator direction (density over minimalism). Platform findings are now recorded during the build. Document layer extended with `NOTEPAD.md`, `CONTEXT.md`, `MEMORY.md`; durable rationale for §2, §3, §5, and §9.1 mirrored into `MEMORY.md` keys.

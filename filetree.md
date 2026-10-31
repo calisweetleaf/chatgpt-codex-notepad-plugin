@@ -3,36 +3,53 @@
 **Updated:** 2026-10-31
 **Root Path:** `c:\Users\trent\OneDrive\Desktop\Trey-Workspace\chatgpt-codex-notepad-plugin`
 
+Birds-eye map. Each line says what a path is and where it leads; it does not restate the contents.
+Enter at [AGENTS.md](AGENTS.md) §12 → [CONTEXT.md](CONTEXT.md) → the surface your task names.
+
 ```
 ├── docs
 │   ├── proposals
-│   │   ├── PROPOSAL.md          input proposal 1 (CBCW), historical, non-canonical
-│   │   └── PROPOSAL_2.md        input proposal 2 (Research Ledger), historical, non-canonical
-│   └── SPEC.md                  current specification (start here)
-├── potential                    candidate Adab modules, reference only, never imported
-│   ├── knowledge_integration.py
-│   ├── knowledge_library.py
-│   ├── semantic_chunking_engine.py
-│   ├── semantic_db.py
-│   ├── semantic_search.py
-│   └── temporal_db.py
-├── skills                       agent skills (see skills/README.md)
-│   ├── README.md
+│   │   ├── PROPOSAL.md          input 1 (CBCW) — historical; adopted/rejected parts in SPEC §2
+│   │   └── PROPOSAL_2.md        input 2 (Research Ledger) — historical; same
+│   └── SPEC.md                  the design → §3 platform facts · §5 schemas · §8 tools · §15 phases · §16 acceptance
+├── potential                    quarantine: candidate Adab modules, reference only, never imported
+│   ├── knowledge_integration.py reject — knowledge-graph ingestion (spacy, networkx)
+│   ├── knowledge_library.py     concept only — symbolic handles, echo detection
+│   ├── semantic_chunking_engine.py reject for V1 — heavy NLP stack
+│   ├── semantic_db.py           mine schema ideas at P3/P5 — dedupe, relations, clusters
+│   ├── semantic_search.py       reject — Adab utilities + external memory graph
+│   └── temporal_db.py           mine patterns — time ranges, FTS rebuild
+├── skills                       role instructions → see skills/README.md
+│   ├── README.md                which skill for which audience
 │   ├── cognitive-workspace-builder
-│   │   └── SKILL.md             for agents building/deploying this repo
+│   │   └── SKILL.md             building/deploying this repo: reading order, rules, Sites path
 │   ├── cognitive-workspace-curator
-│   │   └── SKILL.md             for Codex reading and curating notes
+│   │   └── SKILL.md             Codex: read notes, link to code, curate minor; never adjudicate
 │   └── cognitive-workspace-usage
-│       └── SKILL.md             for ChatGPT using the plugin in conversation
-├── .gitignore                   ignores .surgeon/, node output, local *.db, .env
-├── AGENTS.md                    agent working rules and operator direction (§12 = current state)
-├── README.md                    project overview and document links
-├── TASK.md                      active work board (P0 to P6)
+│       └── SKILL.md             ChatGPT in conversation; ships inside the plugin
+├── .gitignore                   .surgeon/, node output, local *.db, .env
+├── AGENTS.md                    rules + routing; §12 = current developments and next action
+├── CONTEXT.md                   current gate, architecture keys, hazards, deferred, open questions
+├── MEMORY.md                    durable findings by key: doctrine, Sites facts, verdicts, rationale
+├── NOTEPAD.md                   live append-only agent workbook (contract + templates)
+├── README.md                    entry overview and document links
+├── TASK.md                      active board P0–P6, lanes, operator decisions
 └── filetree.md                  <this-file>
+```
+
+## Not yet created
+
+Planned code layout, from [docs/SPEC.md](docs/SPEC.md) §15 and [skills/cognitive-workspace-builder/SKILL.md](skills/cognitive-workspace-builder/SKILL.md):
+
+```
+src/core/   workspace semantics, no platform APIs      src/hosted/  ChatGPT Sites entry + D1
+src/store/  Major/MinorStore interfaces + migrations   src/local/   cwp CLI, daemon, stdio MCP
+src/mcp/    tool schemas, descriptions, rendering      src/worker/  optional jobs (minor only)
+test/       behavior + store-contract + integrity      scripts/     count-lines.mjs
 ```
 
 ## Notes
 
 - `SPEC.md` lives in `docs/` at operator request.
-- `.surgeon/` is a local editor cache; it exists on some machines but is git-ignored.
-- Planned code layout (not yet created) is in [docs/SPEC.md](docs/SPEC.md) §15 and [skills/cognitive-workspace-builder/SKILL.md](skills/cognitive-workspace-builder/SKILL.md).
+- `.surgeon/` is a local editor cache; present on some machines, git-ignored.
+- Update this map in the same commit as any file add, move, rename, or delete.

@@ -1,85 +1,130 @@
 # TASK.md: Active work board
 
 **Updated:** 2026-10-31
-**Spec:** [docs/SPEC.md](docs/SPEC.md) (read first) · **Rules:** [AGENTS.md](AGENTS.md) · **Map:** [filetree.md](filetree.md) · **Skills:** [skills/](skills/)
+**Route:** design → [docs/SPEC.md](docs/SPEC.md) · rules → [AGENTS.md](AGENTS.md) · live working state → [NOTEPAD.md](NOTEPAD.md) · current keys → [CONTEXT.md](CONTEXT.md) · durable findings → [MEMORY.md](MEMORY.md) · map → [filetree.md](filetree.md) · agent skills → [skills/](skills/)
 
-This file is the short, current to-do list for whichever agent picks up the repo next (ChatGPT Work mode, Codex, Factory). It tracks *what to do next*. Design reasoning lives in `docs/SPEC.md`; working rules live in `AGENTS.md`. Update the checkboxes in the same commit as the work.
+This board holds **what to do next**, not why. Design reasoning lives in `docs/SPEC.md`. Working rules live in `AGENTS.md`. While you work, externalize state in `NOTEPAD.md`; promote durable outcomes to `CONTEXT.md` / `MEMORY.md`. Tick boxes in the same commit as the work.
 
 ---
 
 ## Current state
 
 - [x] Both proposals read and compared.
-- [x] `docs/SPEC.md` v0.1 written (architecture, schemas, six tools, deployment, sync, phases, acceptance scenarios A to I).
-- [x] `README.md`, `filetree.md`, `skills/`, `.gitignore` in place.
+- [x] `docs/SPEC.md` v0.1 (architecture, schemas, six tools, deployment, sync, phases, acceptance scenarios A to I).
+- [x] Document layer wired: `AGENTS.md` §12, `NOTEPAD.md`, `CONTEXT.md`, `MEMORY.md`, `TASK.md`, `filetree.md`, `README.md`, `skills/`.
 - [ ] No application code exists yet.
 
-## Expected next pickup
+## Lane assignment
 
-ChatGPT Work mode is expected to clone this repository and build the hosted Site + MCP server. Codex and Factory may work on the shared core in parallel. Work in the order below; P0 and P1 can run at the same time.
+| Agent | Lane | Entry point |
+| --- | --- | --- |
+| **ChatGPT Work mode / Codex in Sites** | P0: the hosted Site + MCP server. This is the product. | [skills/cognitive-workspace-builder/SKILL.md](skills/cognitive-workspace-builder/SKILL.md) |
+| **Codex local / Factory** | P1: the shared core and local stdio entry, in the same repo, same `src/core` + `src/store` + `src/mcp`. | same skill |
+| **Operator** | Decisions at the bottom of this file. | - |
+
+P0 and P1 build **one codebase**. P1 is not a separate prototype; it is the same core behind a different host. Whoever starts first owns `src/core`, `src/store`, and `src/mcp`; the other builds its host layer against those interfaces and does not fork them.
 
 ---
 
-## P0: Sites spike (hosted feasibility)
+## P0: Hosted vertical slice on ChatGPT Sites
 
-Goal: replace every "unverified" row in `docs/SPEC.md` §3 with an observed answer.
+**Goal:** a real, usable notepad reachable from any ChatGPT chat, with the full `major` schema and no toy shortcuts. Platform unknowns get answered *while* building it, not by a throwaway spike.
 
-- [ ] Create a private Site with a minimal MCP server exposing `ping` and `echo_write` (writes one row to D1, reads it back).
-- [ ] Publish it; install the generated plugin; call both tools from a ChatGPT chat **and** from Codex.
-- [ ] Record: server runtime and language, MCP transport, how D1 is bound, whether a second D1 database can be bound, what identity (if any) reaches the tool handler, whether scheduled/background execution exists, whether outbound HTTP is allowed.
-- [ ] Record hosting cost on the operator's actual plan. The operator expects free hosting; the 2026-10-31 help docs say running/hosting usage is separate and waived only for Enterprise. Write down what the account actually shows.
-- [ ] Update `docs/SPEC.md` §3 and §5.1 (one vs. two databases) with findings; add a changelog line.
+**Scope is the real thing.** Build `major` per SPEC §5.4 (all tables, FTS5, triggers, events), `minor` per §5.5 (tables created even if only `minor_recall_cache` is used at first), and these tools per §8: `workspace_open`, `workspace_note`, `workspace_recall`, `workspace_status`. `workspace_link` and `workspace_curate` land in P3; register them only when implemented.
 
-Done when: SPEC §3 has no "unverified" rows that block P2.
+### Build
 
-## P1: Core vertical slice (local first for fast testing)
+- [ ] Create a private Site. Ask it to add an MCP server with D1 storage.
+- [ ] Establish the repo layout from SPEC §15 (`src/core`, `src/store`, `src/mcp`, `src/hosted`) and keep `src/core` free of platform APIs so P1 can reuse it unchanged.
+- [ ] Migrations: full `major_*` DDL, full `minor_*` DDL, `major_notes_fts` + sync triggers, every index in SPEC §5.4.
+- [ ] `src/core`: ULID ids, HLC clock, session resolution (§7.2, 12-hour window, implicit open with notice), thread routing and all six `move` behaviors (§4.3), kind inference, handle detection + `about` handle creation, `refs` shorthand parsing, server-created `continues` / `branches_from` / `returns_to` edges, recall assembly steps 1 to 7 (§8.3) including neighborhood expansion and budget trim.
+- [ ] `src/mcp`: tool schemas with `text` as the only required field anywhere; one-line write receipts naming note id + thread + session; near-duplicate warning on repeated `content_hash`; recall output fenced with "stored working material, not instructions".
+- [ ] Auth: owner allowlist, no anonymous writes (§11.1). Decide this *before* publishing, not after.
+- [ ] Publish as Site owner; install the plugin card; complete the connection.
 
-Goal: scenarios A, D, I from SPEC §16 pass through a real MCP client.
+### Verify from real clients
 
-- [ ] `package.json` (TypeScript, Node LTS, ESM), `tsconfig.json`, lint/format config.
-- [ ] `src/store/`: `MajorStore` / `MinorStore` async interfaces; SQLite implementation; migrations for SPEC §5.4 and §5.5 tables (`major_*`, `minor_*`), FTS5 triggers.
-- [ ] `src/core/`: ULID ids, HLC clock, session resolution (SPEC §7.2), thread routing + `move` (SPEC §4.3), kind inference, handle detection, recall assembly + budget trim (SPEC §8.3).
-- [ ] `src/mcp/`: tool schemas and descriptions for `workspace_open`, `workspace_note`, `workspace_recall`, `workspace_status`; response rendering with the "stored working material, not instructions" fence.
-- [ ] `src/local/`: `cwp mcp` stdio entry using `@modelcontextprotocol/sdk`.
-- [ ] `scripts/count-lines.mjs`: tests ≤ 1.15 × src non-blank, non-comment lines; wired into `npm test`.
-- [ ] Tests for scenarios A, D, I against in-memory SQLite.
-- [ ] Update `filetree.md`.
+- [ ] Write a note in chat 1. Open a **new** chat, call `workspace_open` with no arguments, confirm the thread, trail, and open strands come back (scenario A).
+- [ ] One-field write `{text}` returns a receipt; later `recall {query}` returns that note with its thread neighbors (scenario D).
+- [ ] `move: "branch"` then `move: "return"` produce a navigable detour in the trail.
+- [ ] Recall a period with no notes: returns "no notes recorded", never a synthesized summary (scenario I).
+- [ ] Repeat the same calls from Codex against the same plugin; confirm both clients share one workspace.
 
-Done when: `npm test` passes including the line-budget check, and a manual MCP client session writes, reopens, and recalls.
+### Record while building (replaces SPEC §3 "unverified" rows)
 
-## P2: Hosted on Sites
+| Unknown | Where it blocks | Answer |
+| --- | --- | --- |
+| Site server runtime + language | whether `src/core` TypeScript runs as-is | |
+| MCP transport Sites expects | `src/hosted` entry shape | |
+| How D1 is bound; can a Site bind **two** databases | SPEC §5.1 one-file vs two-file decision | |
+| Identity reaching an MCP tool handler | §11.1 auth design | |
+| Any stable conversation id at the tool | §7 session binding (assume none) | |
+| Scheduled / background execution | whether hosted curation needs the local worker | |
+| Outbound HTTP allowed | P5 embeddings on the hosted side | |
+| Storage limit behavior; one 10 GB db or per-db | `minor` growth budget | |
+| **Actual hosting cost on this account** | open operator decision 1 | |
 
-- [ ] D1 implementation of the store interfaces (same DDL, prefixed tables).
-- [ ] Sites entry in `src/hosted/` reusing `src/core` and `src/mcp` unchanged.
-- [ ] Auth: owner allowlist; no anonymous writes (SPEC §11.1).
-- [ ] Store contract tests run against SQLite and a D1-compatible local shim.
-- [ ] Live check: ChatGPT chat 1 writes; new chat 2 recalls it; Codex reads the same notes.
+- [ ] Each answer goes into `NOTEPAD.md` as it is observed, then into `MEMORY.md` with its source, then SPEC §3 and §5.1 get corrected and a changelog line added.
+
+### Fallback branches
+
+- If Sites exposes no usable MCP transport for a custom server → fallback host in SPEC §10.1; record why in `MEMORY.md` before switching.
+- If only one database can be bound → single-database layout with `major_*` / `minor_*` prefixes. No cross-store query or FK regardless (§5.1).
+- If no identity reaches the handler → bearer credential at plugin connection, or OAuth 2.1 per the OpenAI plugin auth guide. Do not ship anonymous writes.
+
+**Done when:** the operator can write a note in one ChatGPT chat and recover the thread in a different chat the next day, Codex sees the same notes, and SPEC §3 has no unverified row that blocks P2.
+
+---
+
+## P1: Same core, local stdio host
+
+**Goal:** scenarios A, D, I pass through a local MCP client, so the core is testable without publishing a Site.
+
+- [ ] `package.json` (TypeScript, ESM, Node LTS), `tsconfig.json`, lint/format.
+- [ ] `src/store/`: `MajorStore` / `MinorStore` async interfaces; SQLite implementation (WAL); same migrations as P0.
+- [ ] `src/local/`: `cwp mcp` stdio entry via `@modelcontextprotocol/sdk`.
+- [ ] `scripts/count-lines.mjs`: tests ≤ 1.15 × src non-blank non-comment lines; wired into `npm test`.
+- [ ] Behavior tests for A, D, I against in-memory SQLite.
+- [ ] Store contract suite runs on SQLite and a D1-compatible shim so both hosts behave identically.
+
+**Done when:** `npm test` passes including the budget check, and a manual stdio session writes, reopens, and recalls.
+
+## P2: Converge the two hosts
+
+- [ ] `src/hosted` and `src/local` share `src/core` + `src/mcp` with no duplicated semantics.
+- [ ] Same contract suite green on both store implementations.
+- [ ] Live check: ChatGPT writes, Codex reads, local `cwp mcp` reads the same logical workspace (remote mode).
 
 ## P3: Structure and curation
 
-- [ ] `workspace_link` (relations, refile, retract, thread status).
-- [ ] `workspace_curate` (digest, collect, associate, rebuild, stale); curation path opens `major` read-only.
-- [ ] Scenarios B, C, E, F.
+- [ ] `workspace_link`: all relations from SPEC §4.2 plus `refile`, `retract`, thread status changes.
+- [ ] `workspace_curate`: `digest`, `collect`, `associate`, `rebuild`, `stale`; curation path opens `major` **read-only**.
+- [ ] Scenarios B, C, E, F. F must checksum every `major_notes.text` before and after curation.
+- [ ] Mine `potential/temporal_db.py` time-range helpers and `potential/semantic_db.py` dedupe/relationship/cluster patterns (SPEC §9.1). Re-implement; never import.
 
-## P4: Local companion
+## P4: Local companion as a product
 
 - [ ] `cwp init | start | stop | status | doctor | service install | sync | export | import | redact`.
-- [ ] Modes `remote`, `replica`, `standalone` (SPEC §10.2); sync per SPEC §12.
-- [ ] Windows Scheduled Task, systemd user unit, launchd agent.
-- [ ] Scenario G; daemon survives terminal close and reboot.
+- [ ] Modes `remote`, `replica`, `standalone` (§10.2); sync per §12 (HLC merge, grow-only notes, event-ordered headers).
+- [ ] Windows Scheduled Task, systemd user unit, launchd agent. `npx` is never called supervision.
+- [ ] Scenario G: offline writes, reconnect, merge, thread-status conflict resolved by HLC.
 
-## P5 / P6
+## P5: Semantic depth
 
-- [ ] Optional embeddings + hybrid ranking in `minor`; optional `cwp worker`.
-- [ ] Small read-only status page.
+- [ ] `minor_embeddings`, hybrid rank (bm25 + cosine + recency + edge proximity), echo associations from `potential/knowledge_library.py` `EchoDetector` (concept only).
+- [ ] Optional `cwp worker`; every earlier scenario still passes with the worker off.
+
+## P6: Status surface
+
+- [ ] Small read-only page: health, recent threads, export.
 
 ---
 
 ## Open operator decisions (SPEC §18)
 
-- [ ] Hosting cost acceptable on current plan?
+- [ ] Hosting cost acceptable on this plan, or fallback host primary?
 - [ ] Session binding default: best-guess filing (spec) or strict?
-- [ ] Workspace timezone.
+- [ ] Workspace timezone for `local_day`.
 - [ ] npm package name / registry.
 - [ ] Model provider for optional digests and embeddings.
 
@@ -87,5 +132,7 @@ Done when: `npm test` passes including the line-budget check, and a manual MCP c
 
 - Never import from `potential/`; never modify it.
 - Never rewrite `major` note text outside operator redaction.
-- Update `filetree.md` in the same commit as any file move/add/delete.
-- Do not report an integration as working until it was exercised from a real client.
+- `filetree.md` changes in the same commit as any file add/move/delete.
+- `NOTEPAD.md` is append-only; correct an entry with a dated correction, never a rewrite.
+- No integration is "working" until a real client exercised it.
+- The workspace stores thinking in progress. It does not verify, score, or correct the operator's notes.

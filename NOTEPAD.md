@@ -1,0 +1,779 @@
+# NOTEPAD — Agent Workbook
+
+> External working notebook for agents operating in this repository.
+>
+> **This file is for the model, not the operator.**
+> Its value is not presentation quality. Its value is the work behavior it induces:
+> inspect → write → act → observe → write → redirect → validate → write → persist.
+>
+> `NOTEPAD.md` is the live, append-only workspace between repository instructions and durable
+> codebase memory.
+>
+> **Hierarchy:** `AGENTS.md` → `NOTEPAD.md` → `CONTEXT.md` → `MEMORY.md`
+>
+> - `AGENTS.md` tells the agent how to operate.
+> - `NOTEPAD.md` is where the agent externalizes active working state while operating.
+> - `CONTEXT.md` indexes the durable state that survives the turn.
+> - `MEMORY.md` stores the deep durable findings, provenance, architecture truth, failures,
+>   verification, and historical strata.
+>
+> Do not make the operator reconstruct your work from chat. Keep the notebook alive while you work.
+
+---
+
+## Workbook Contract
+
+1. **Write before substantial work begins.**
+   - Record what you think the task is.
+   - Record the repo state you actually observed.
+   - Record what you are about to inspect first and why.
+   - Record uncertainty, contradictions, and assumptions that could redirect the work.
+
+2. **Write while working.**
+   - The notebook is not a retrospective handoff generated after the work is done.
+   - Append when new evidence changes your working model.
+   - Append when a command/test fails in an informative way.
+   - Append when a file, symbol, import, API, syntax, dependency, contract, artifact, or runtime
+     behavior differs from what you expected.
+   - Append before changing lanes or abandoning an approach.
+   - Append a deferred observation immediately if it matters but is outside the current task.
+
+3. **Write after substantial work.**
+   - Record what actually changed.
+   - Record verification truth.
+   - Record remaining uncertainty/hazards.
+   - Record what should be promoted into `CONTEXT.md` and `MEMORY.md`.
+   - Leave the next agent a runnable re-entry point.
+
+4. **Append only.**
+   - Never rewrite history merely because your understanding changed.
+   - Correct an earlier note with a new dated correction/addendum.
+   - Historical confusion is useful provenance when the correction is explicit.
+
+5. **Use this as a workbook, not a status report.**
+   - Fragments are allowed.
+   - Partial hypotheses are allowed.
+   - Temporary maps, tables, pseudocode, equations, command output excerpts, candidate file paths,
+     symbol lists, and competing interpretations are allowed.
+   - Polished prose is not required.
+   - Useful state is required.
+
+6. **Do not wait for certainty.**
+   - Mark epistemic status instead:
+     - `OBSERVED`
+     - `INFERRED`
+     - `HYPOTHESIS`
+     - `OPERATOR-DIRECTIVE`
+     - `VERIFIED`
+     - `DISPROVEN`
+     - `DEFERRED`
+     - `BLOCKED`
+     - `SUPERSEDED`
+
+7. **Do not confuse scratch with canon.**
+   - A NOTEPAD hypothesis does not become repository truth merely because it was written here.
+   - Promote durable outcomes through `CONTEXT.md` and `MEMORY.md`.
+   - Point to live code, tests, docs, artifacts, manifests, logs, or source evidence whenever possible.
+
+8. **Do not suppress useful failures.**
+   - A missing import, wrong signature, stale path, malformed fixture, unexpected branch, dirty tree,
+     failed assertion, contradictory document, absent checkpoint, or suspicious metric belongs here
+     when it changes the work.
+   - If it cannot be investigated now, capture it under `DEFERRED` and continue the authorized lane.
+
+9. **Every substantial entry must route somewhere.**
+   - Into an immediate next action.
+   - Into a file/symbol/test to inspect.
+   - Into a deferred thread.
+   - Into `CONTEXT.md`.
+   - Into `MEMORY.md`.
+   - Or explicitly nowhere because it was disproven/noise.
+
+10. **Do not manufacture a notebook after the fact.**
+    - If the only NOTEPAD write is at handoff, the workbook contract was not followed.
+
+---
+
+## Write Triggers
+
+Append a checkpoint whenever any of these occur:
+
+- task/session start
+- repo/context re-entry after a pause
+- before first code edit
+- architecture interpretation changes
+- unexpected file or symbol discovered
+- missing file/import/API/syntax/dependency encountered
+- current docs disagree with live code
+- command/test produces informative failure
+- experiment changes the hypothesis
+- scope or implementation lane changes
+- an approach is rejected
+- a new hazard appears
+- a useful observation must be deferred
+- another agent's work changes your assumptions
+- before a risky/destructive/large edit
+- after a coherent implementation slice lands
+- validation result changes
+- before handoff/session close
+- before promoting durable findings to `CONTEXT.md` / `MEMORY.md`
+
+A checkpoint can be three lines. Do not avoid writing because the full entry template feels too large.
+
+---
+
+## Entry Identity
+
+Use a stable header so other agents and memory files can route back here.
+
+```text
+## <YYYY-MM-DDTHH:MM:SS±TZ> | <agent> | <lane/task> | <phase>
+```
+
+Recommended `phase` values:
+
+- `OPEN`
+- `WORK`
+- `CHECKPOINT`
+- `PIVOT`
+- `FAILURE`
+- `DEFER`
+- `VALIDATE`
+- `CLOSE`
+- `CORRECTION`
+- `HANDOFF`
+
+Reuse high-signal nouns across NOTEPAD, CONTEXT, and MEMORY:
+filenames, symbols, task IDs, artifact names, subsystem names, run IDs, capability names.
+
+---
+
+# Active Workbook
+
+> Append new entries below. Newest-at-bottom is recommended for multi-agent append safety.
+> If repository doctrine explicitly requires newest-first, follow repository doctrine.
+
+---
+
+## <YYYY-MM-DDTHH:MM:SS±TZ> | <agent> | <lane/task> | OPEN
+
+### Intake
+
+- **Task as understood:** <WHAT I AM ACTUALLY TRYING TO ACCOMPLISH>
+- **Operator constraint:** <EXPLICIT CONSTRAINTS / NONE>
+- **Current lane:** <IMPLEMENTATION / DEBUG / AUDIT / RESEARCH / DOCS / EXPERIMENT / OTHER>
+- **Authority loaded:** `<AGENTS.md>` · `<SPEC>` · `<STATE>` · `<OTHER REQUIRED SURFACES>`
+- **Base state:** <BRANCH / COMMIT / DIRTY STATE / RUNTIME STATE / N-A>
+- **Existing relevant context:** `<CONTEXT KEY / MEMORY ENTRY / TASK / PRIOR HANDOFF>`
+
+### Initial Working Model
+
+- `OBSERVED` — <FACT FROM CURRENT REPO / SOURCE>
+- `OBSERVED` — <FACT>
+- `INFERRED` — <CURRENT INTERPRETATION>
+- `UNKNOWN` — <THING THAT MUST BE RESOLVED>
+- `HAZARD` — <THING THAT COULD INVALIDATE THE PLAN>
+
+### First Traversal
+
+I will inspect:
+
+1. `<file/symbol/artifact>` — <WHY>
+2. `<file/symbol/artifact>` — <WHY>
+3. `<test/command/evidence>` — <WHAT QUESTION IT ANSWERS>
+
+### Immediate Route
+
+`<first action>` → `<expected observation>` → `<next branch if true/false>`
+
+Do not over-plan past evidence you have not inspected yet.
+
+---
+
+## <YYYY-MM-DDTHH:MM:SS±TZ> | <agent> | <lane/task> | WORK
+
+### Observation
+
+- `OBSERVED` — <NEW FACT>
+- Source: `<path:symbol / command / artifact / source id>`
+
+### Working Interpretation
+
+- <CONCISE EXTERNALIZED REASONING SUMMARY>
+- <WHAT THIS CHANGES ABOUT THE CURRENT MODEL>
+- <WHAT IT DOES NOT YET PROVE>
+
+### Action
+
+- <WHAT I AM DOING NEXT BECAUSE OF THIS OBSERVATION>
+
+### Route
+
+- If <CONDITION>: inspect/do `<X>`
+- Else: inspect/do `<Y>`
+
+---
+
+## Micro-Checkpoint — Use Freely
+
+> Use this smaller form whenever stopping to fill a full block would interrupt the work.
+
+```text
+### <HH:MM> | CHECKPOINT | <key>
+OBSERVED: <fact>
+MEANS: <concise interpretation>
+DO: <next action>
+ROUTE: <file/symbol/test/deferred/memory key>
+```
+
+Example shape:
+
+```text
+### 14:22 | CHECKPOINT | parser-import
+OBSERVED: `foo.py` imports `Bar` from `runtime.types`, but `Bar` now lives in `runtime.contracts`.
+MEANS: likely stale import, not a parser algorithm failure.
+DO: verify call sites + git history before editing.
+ROUTE: `foo.py:parse_*` → `runtime/contracts.py:Bar`
+```
+
+---
+
+## Discovery / Contradiction Checkpoint
+
+Use when reality disagrees with instructions, docs, assumptions, or another agent's handoff.
+
+### Discovery
+
+- `OBSERVED`: <WHAT THE LIVE SURFACE SAYS>
+- `EXPECTED`: <WHAT I EXPECTED>
+- `CONFLICTS WITH`: `<doc / context / memory / prior entry / assumption>`
+- `EVIDENCE`: `<path / command / lines / artifact>`
+
+### Interpretation
+
+- <MOST LIKELY EXPLANATION>
+- Confidence: `<LOW | MEDIUM | HIGH>`
+- Do not silently reconcile the conflict.
+
+### Resolution Route
+
+- [ ] verify live code
+- [ ] inspect provenance/history
+- [ ] test runtime behavior
+- [ ] append correction to NOTEPAD
+- [ ] promote correction to CONTEXT
+- [ ] promote durable explanation to MEMORY
+- [ ] defer with explicit key
+
+---
+
+## Failure Checkpoint
+
+> A failure is working-state information. Capture it before blindly patching around it.
+
+### Failure
+
+- **Command/action:** `<WHAT FAILED>`
+- **Failure surface:** `<ERROR / ASSERTION / SYMPTOM>`
+- **Expected:** <EXPECTED RESULT>
+- **Observed:** <ACTUAL RESULT>
+
+### Diagnosis State
+
+- `RULED OUT` — <THING>
+- `POSSIBLE` — <THING>
+- `POSSIBLE` — <THING>
+- `UNKNOWN` — <THING>
+
+### Next Probe
+
+- <SMALLEST HIGH-INFORMATION ACTION>
+
+### Anti-Loop Note
+
+- Do not repeat: <COMMAND / APPROACH / ASSUMPTION> unless <NEW CONDITION>
+
+---
+
+## Deferred Thread
+
+> Use this immediately when something matters but should not hijack the current lane.
+
+### <HH:MM> | DEFERRED | <stable-key>
+
+- **Found while:** <CURRENT TASK>
+- **Observation:** <THING WORTH RETURNING TO>
+- **Why not now:** <SCOPE / TIME / DEPENDENCY / OPERATOR OWNERSHIP>
+- **Re-entry key:** `<exact filename/symbol/error/artifact/search phrase>`
+- **Suggested first probe:** <ONE ACTION>
+- **Promotion:** `<NOTEPAD ONLY | CONTEXT | MEMORY>` pending verification
+
+Then return to the current task.
+
+---
+
+## Hypothesis / Experiment Block
+
+> Useful for research, architecture exploration, debugging, and ambiguous systems work.
+
+### Question
+
+<WHAT AM I TRYING TO EXPLAIN OR DISTINGUISH?>
+
+### Candidate Hypotheses
+
+| ID | Hypothesis | Supporting evidence | Contradicting evidence | Status |
+|---|---|---|---|---|
+| H1 | <...> | <...> | <...> | OPEN |
+| H2 | <...> | <...> | <...> | OPEN |
+| H3 | <...> | <...> | <...> | OPEN |
+
+### Discriminating Probe
+
+- <TEST / SOURCE / FILE / EXPERIMENT THAT BEST SEPARATES THE HYPOTHESES>
+
+### Result
+
+- <OBSERVED RESULT>
+
+### Update
+
+- H1: `<SUPPORTED / WEAKENED / DISPROVEN / OPEN>`
+- H2: `<...>`
+- Working model: <CURRENT BEST EXPLANATION>
+- Route: <NEXT PROBE OR PROMOTION TARGET>
+
+---
+
+## Investigation / Evidence Dump
+
+> For OSINT, corpus analysis, architecture forensics, large-codebase archaeology, or any lane where
+> preserving raw structured observations is more useful than prematurely compressing them.
+
+### Objective
+
+<QUESTION / TARGET>
+
+### Raw Findings
+
+- `<evidence-key>` — <FINDING> — source: `<source/path/artifact>`
+- `<evidence-key>` — <FINDING> — source: `<source/path/artifact>`
+
+### Emerging Structure
+
+- <PATTERN / CLUSTER / DATA FLOW / ACTOR-SYSTEM RELATION / CODE TOPOLOGY>
+- <PATTERN>
+
+### Anomalies
+
+- <ABSENCE / CONTRADICTION / OUTLIER / UNEXPECTED RELATION>
+- <WHY IT MATTERS>
+
+### Collection / Inspection Requirements
+
+1. <NEXT REQUIRED SOURCE OR CODE SURFACE>
+2. <NEXT REQUIRED SOURCE OR CODE SURFACE>
+3. <DISCRIMINATING EVIDENCE>
+
+### Current Hypothesis
+
+`HYPOTHESIS` — <CURRENT MODEL>
+
+### Confidence / Boundary
+
+- Confidence: <LOW/MEDIUM/HIGH>
+- Verified: <WHAT IS ACTUALLY ESTABLISHED>
+- Not established: <WHAT MUST NOT BE PROMOTED AS FACT>
+
+---
+
+## Before-Edit Checkpoint
+
+> Write before the first substantive edit or before a high-impact structural edit.
+
+### Edit Intent
+
+- Target: `<file(s)/symbol(s)>`
+- Why this surface: <REASON>
+- Invariant to preserve: <INVARIANT>
+- Expected blast radius: <FILES / TESTS / CALLERS / ARTIFACTS>
+- Rollback/recovery: <GIT / BACKUP / REGEN / REVERT PATH>
+
+### Evidence Justifying Edit
+
+- <FACT>
+- <FACT>
+
+### Post-Edit Gate
+
+```bash
+<COMMAND OR VALIDATION SEQUENCE>
+```
+
+---
+
+## Post-Slice Checkpoint
+
+> Use after a coherent implementation/research slice. Do not wait for the whole task.
+
+### Changed / Learned
+
+- <CHANGE OR FINDING>
+- <CHANGE OR FINDING>
+
+### Validation So Far
+
+- `<command/test/check>` → `<PASS | FAIL | PARTIAL>`
+- <key metric / evidence>
+
+### Working State
+
+- What is now true: <...>
+- What is still open: <...>
+- Next slice: <...>
+
+---
+
+## Multi-Agent Handoff Checkpoint
+
+### Lane State
+
+- **Agent:** <NAME/MODEL/LANE>
+- **Base:** <COMMIT / TREE / ARTIFACT SET>
+- **Owns:** <CURRENT LANE>
+- **Must not assume:** <BOUNDARY>
+- **Did:** <WHAT LANDED / WAS LEARNED>
+- **Read-only:** `<YES/NO>`
+
+### Validation
+
+- `<command>` → `<RESULT>`
+- `<command>` → `<RESULT>`
+
+### Proof / Evidence Facts
+
+- <ONLY THE FACTS THE NEXT AGENT NEEDS>
+
+### Next Agent Route
+
+- **Objective:** <ONE COHERENT OBJECTIVE>
+- **Start at:** `<file/symbol/task/source>`
+- **First command/probe:** `<...>`
+- **Preserve:** <INVARIANTS>
+- **Do not reopen:** <LANDED/SUPERSEDED WORK>
+
+### Hazards
+
+- <REAL BLOCKER / DRIFT / DIRTY STATE / CONFLICT>
+- `none` if genuinely none
+
+---
+
+## <YYYY-MM-DDTHH:MM:SS±TZ> | <agent> | <lane/task> | VALIDATE
+
+### Validation Matrix
+
+| Surface | Command / method | Expected | Observed | Verdict |
+|---|---|---|---|---|
+| <unit> | `<...>` | <...> | <...> | PASS/FAIL |
+| <integration> | `<...>` | <...> | <...> | PASS/FAIL |
+| <artifact> | `<...>` | <...> | <...> | PASS/FAIL |
+| <invariant> | `<...>` | <...> | <...> | PASS/FAIL |
+
+### Validation Interpretation
+
+- <WHAT THE RESULTS ESTABLISH>
+- <WHAT THEY DO NOT ESTABLISH>
+- <ANY FALSE POSITIVE / TOY / PARTIAL / ENVIRONMENT BOUNDARY>
+
+### Fail-Loud State
+
+- Remaining failures: <...>
+- Accepted/expected failures: <...>
+- Unexpected failures: <...>
+
+---
+
+## <YYYY-MM-DDTHH:MM:SS±TZ> | <agent> | <lane/task> | CLOSE
+
+### Outcome
+
+- **Verdict:** `<LANDED | PARTIAL | BLOCKED | FAILED | READ-ONLY | SUPERSEDED>`
+- **Task result:** <ONE-PARAGRAPH MAX>
+- **Base/end state:** <COMMIT / DIRTY STATE / ARTIFACT / SESSION STATE>
+
+### What Changed
+
+- `<path/symbol/artifact>` — <CHANGE>
+- `<path/symbol/artifact>` — <CHANGE>
+
+### What Was Learned
+
+- <DURABLE FINDING>
+- <DURABLE FINDING>
+- <CORRECTED ASSUMPTION>
+
+### Verification Truth
+
+- `<command/check>` → `<RESULT>`
+- `<metric/invariant>` → `<RESULT>`
+
+### Remaining State
+
+- `OPEN` — <THREAD>
+- `DEFERRED` — <THREAD + RE-ENTRY KEY>
+- `HAZARD` — <THREAD>
+- `none` if closed cleanly
+
+### Persistence Routing
+
+#### Promote to `CONTEXT.md`
+
+Compact keys/state the next agent should see immediately:
+
+- `<context-key>` — <SHORT CURRENT TRUTH>
+- `<context-key>` — <SHORT CURRENT TRUTH>
+
+#### Promote to `MEMORY.md`
+
+Deep durable material worth preserving:
+
+- `<memory-title/key>` — <FINDING / PROVENANCE / FAILURE / ARCHITECTURE TRUTH>
+- `<memory-title/key>` — <FINDING>
+
+#### Keep only in `NOTEPAD.md`
+
+- <EPHEMERAL / DISPROVEN / LOW-VALUE DETAIL THAT SHOULD NOT POLLUTE DURABLE MEMORY>
+
+### Next Re-Entry
+
+`AGENTS.md`
+→ `NOTEPAD.md` search `<key>`
+→ `CONTEXT.md` search `<key>`
+→ `MEMORY.md` search `<key>`
+→ inspect `<file/symbol/artifact>`
+→ run `<command/probe>`
+
+### Handoff
+
+- Next objective: <...>
+- First action: <...>
+- Preserve: <...>
+- Avoid repeating: <...>
+
+---
+
+## Correction / Addendum
+
+> Never rewrite an old entry just to make history cleaner.
+
+## <YYYY-MM-DDTHH:MM:SS±TZ> | <agent> | <original-key> | CORRECTION
+
+- **Corrects:** `<prior timestamp / heading / claim>`
+- **Old claim:** <SHORT DESCRIPTION>
+- **New evidence:** <WHAT CHANGED>
+- **Corrected truth:** <CURRENT INTERPRETATION>
+- **Propagation required:** `<CONTEXT | MEMORY | DOC | CODE | NONE>`
+- **Route:** `<relevant file/symbol/artifact>`
+
+---
+
+# Optional Live Boards
+
+These are useful in long-running sessions. They are not required for every repository.
+
+## Active Questions
+
+- `[OPEN] <key>` — <question>
+- `[BLOCKED] <key>` — <question> — waiting on <dependency>
+- `[RESOLVED] <key>` — <answer> — see `<entry>`
+
+## Deferred Queue
+
+- `<key>` — <observation> — re-enter at `<file/symbol/test>`
+- `<key>` — <observation> — re-enter at `<file/symbol/test>`
+
+## Current Hypothesis Board
+
+| Key | Working hypothesis | Confidence | Next discriminator |
+|---|---|---:|---|
+| `<H1>` | <...> | low/med/high | <...> |
+
+## Current Hazard Board
+
+- `<key>` — <hazard> — <mitigation / required check>
+
+## Current Gate Board
+
+- Current gate: `<task/test/milestone>`
+- Expected verdict: `<...>`
+- Last observed verdict: `<...>`
+- Required command: `<...>`
+- Next gate: `<...>`
+
+---
+
+# Promotion Rules
+
+## NOTEPAD → CONTEXT
+
+Promote when a finding becomes useful for rapid future routing:
+
+- current task/gate changed
+- active architecture interpretation changed
+- important file/symbol/artifact became authoritative
+- meaningful hazard or blocker exists
+- a prior assumption was superseded
+- a durable open thread needs a re-entry key
+- validation meaningfully changed current posture
+
+Keep the CONTEXT version compressed. Preserve the same keys.
+
+## NOTEPAD → MEMORY
+
+Promote when rediscovering the information later would waste serious work or risk architectural drift:
+
+- durable architecture truth
+- implementation lineage/provenance
+- important experiment result
+- failed approach + why it failed
+- contradiction resolution
+- non-obvious runtime behavior
+- important test/verification boundary
+- artifact lineage
+- operator doctrine affecting the repository
+- decisions plus rationale/consequences
+- unresolved research question with meaningful accumulated evidence
+
+MEMORY may be much larger than the NOTEPAD entry if the durable finding needs full reconstruction.
+
+## Do Not Promote
+
+Usually keep only here when:
+
+- typo-level detour
+- disproven hypothesis with no anti-rediscovery value
+- transient command chatter
+- obvious observation future agents can instantly rediscover
+- formatting-only work with no repository consequence
+
+---
+
+# Anti-Patterns
+
+Do **not** turn NOTEPAD into:
+
+- a polished report written only after finishing
+- a duplicate of `CONTEXT.md`
+- a duplicate of `MEMORY.md`
+- a user-facing progress diary
+- a giant paste of raw terminal output with no interpretation
+- a task board containing only future work
+- a changelog containing only completed edits
+- a hidden place for unsupported claims
+- a graveyard of TODOs with no re-entry keys
+- an excuse to narrate instead of inspecting/acting
+- a requirement to write an essay after every shell command
+
+The desired pattern is **small, frequent, useful state externalization**.
+
+---
+
+# The Workbook Loop
+
+When in doubt:
+
+```text
+READ
+↓
+WRITE what is currently known / unknown
+↓
+ACT
+↓
+OBSERVE
+↓
+WRITE what changed in the working model
+↓
+ACT or PIVOT
+↓
+VALIDATE
+↓
+WRITE the evidence boundary
+↓
+PROMOTE durable state to CONTEXT / MEMORY
+↓
+LEAVE a re-entry route
+```
+
+The notebook should make interruption cheap.
+
+A fresh agent should be able to open the newest relevant NOTEPAD entries and recover:
+- what was being attempted,
+- what reality looked like,
+- what changed during the attempt,
+- what failed,
+- what is still uncertain,
+- where to inspect next,
+- and which findings already graduated into durable codebase memory.
+
+That is the contract.
+
+---
+
+## 2026-10-31 | Factory/Opus | doc-layer: route NOTEPAD/CONTEXT/MEMORY, rescope P0 | CLOSE
+
+### Outcome
+
+- **Verdict:** `LANDED` (documentation only; no application code).
+- **Task result:** Operator added `NOTEPAD.md` and corrected two things: the document layer must **route** rather than absorb, and the first hosted slice must be **dense, not minimal**. Wired `NOTEPAD.md` into the layer, created the `CONTEXT.md` / `MEMORY.md` it depends on, rescoped P0 from a `ping`+`echo_write` spike to the real hosted server, and removed verification-flavored language from the Codex curator skill.
+- **Base/end state:** clean tree at the commit named below; `src/` still does not exist.
+
+### What changed
+
+- `TASK.md` — rewritten. P0 is now the hosted vertical slice (full `major` DDL, `minor` tables, four tools, auth before publish) with the platform unknowns as a fill-in table and explicit fallback branches. Added lane assignment: P0 and P1 are one codebase, P1 must not fork `src/core`.
+- `CONTEXT.md` — new. Current gate, authoritative surfaces, architecture keys, hazards, deferred queue, open questions, re-entry route.
+- `MEMORY.md` — new. Keys: `doctrine-no-verification`, `sites-facts-2026-10-31`, `potential-verdicts`, `proposal-rejections`, `store-split-rationale`, `document-layer-roles`.
+- `AGENTS.md` §12 — replaced body with a "document layer routes; it does not absorb" table, the expanded inventory, a density-over-minimalism note bounding §11's "stay small", and a routing-first next action.
+- `skills/cognitive-workspace-curator/SKILL.md` — hard rules 1, 3, 4 rewritten. `corrects` is now reserved for Codex correcting its own note; no scoring, no "unsupported" labels, no adjudicating the operator's thinking.
+- `skills/cognitive-workspace-builder/SKILL.md` — reading order now routes through `CONTEXT.md` and `MEMORY.md` and requires keeping `NOTEPAD.md` alive.
+- `docs/SPEC.md` — §15 P0 row rescoped; §19 changelog entry added.
+- `filetree.md` — birds-eye map plus one-line routing hints per path, a "not yet created" `src/` block, and per-module `potential/` verdicts.
+- `README.md` — document table reordered to the routing path; status line points at P0.
+
+### What was learned
+
+- `OPERATOR-DIRECTIVE` — "Density matters; smaller is not more efficient." Minimalism was the wrong instinct for the first deployable slice. Scope discipline belongs to *how much of `potential/` gets transplanted at once*, not to how complete the real server is. → `AGENTS.md` §12, `MEMORY.md` → `document-layer-roles`.
+- `OPERATOR-DIRECTIVE` — the extensive doc setup exists to make the codebase proactively helpful, not to save tokens. Spend tokens by routing into the right surface and evolving it, so the next session resumes without reconstruction.
+- `CORRECTED ASSUMPTION` — my earlier curator-skill wording ("if code and note disagree, write a note saying so", plus a `corrects` link) imported exactly the verified-reward posture the operator rejects. Fixed; the doctrine now has a `MEMORY.md` key so it is not re-derived loosely.
+- `OBSERVED` — `NOTEPAD.md` arrived referencing `CONTEXT.md` and `MEMORY.md`, which did not exist. The routing layer was advertising dead ends. Resolved by creating both with real seeded content rather than stubs.
+- `OBSERVED` — uncommitted `AGENTS.md` delta before this session was a markdown formatter pass only (trailing whitespace, blank lines, table separators). No operator prose was lost.
+
+### Verification truth
+
+- `surgeon op=check` on every changed file → `{"diagnostics": []}`.
+- No tests exist to run; no code was written. Nothing here has been exercised against a live client.
+- `sites-facts-2026-10-31` remains documentation-only. Hosting cost on this account is still unobserved.
+
+### Remaining state
+
+- `OPEN` — P0 has not started. No `src/`, no `package.json`.
+- `HAZARD` — `hosting-cost`: operator expects free Sites hosting; docs say otherwise outside Enterprise. Only the account can settle it. Blocks operator decision 1.
+- `HAZARD` — `sites-runtime-unknown`: runtime, MCP transport, DB binding count, handler identity all unobserved. Everything planned for `src/hosted` is provisional.
+- `DEFERRED` — `potential-mining`: re-enter at P3 (time ranges, dedupe/relation/cluster schema) and P5 (echo detection). Re-implement in TypeScript; never import.
+
+### Persistence routing
+
+- Promoted to `CONTEXT.md`: `current gate`, `major-invariant`, `store-split`, `tool-surface`, `binding`, `no-verification`, `hosting-cost`, `sites-runtime-unknown`, `doc-drift`.
+- Promoted to `MEMORY.md`: the six keys listed above.
+- Kept only here: the formatter-delta observation.
+
+### Next re-entry
+
+`AGENTS.md` §12 → `CONTEXT.md` current gate → `TASK.md` P0 → `docs/SPEC.md` §5 (schemas) and §8 (tools) → open a new `NOTEPAD.md` entry before the first substantive change.
+
+### Handoff
+
+- **Next objective:** P0. Create the private Site with an MCP server + D1, stand up `src/core` / `src/store` / `src/mcp` / `src/hosted`, and record each platform finding here as it is observed.
+- **First action:** create the Site and ask it to add an MCP server with D1 storage; capture the runtime and transport it gives you before writing host code.
+- **Preserve:** `major` append-only; no cross-store query or FK; `text` as the only required tool field; auth decided before publishing.
+- **Avoid repeating:** re-reading both proposals (reconciled in SPEC §2), re-evaluating `potential/` (verdicts in `MEMORY.md`), and re-checking hosting cost in documentation.

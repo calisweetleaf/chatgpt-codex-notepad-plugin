@@ -8,9 +8,8 @@
 >
 > **TEST CODE SIZE LIMIT:** Across the project, total handwritten test-code lines **MUST NOT exceed 115% of the actual implemented application-code lines** (tests may be at most 15% larger than implementation). Exclude documentation, generated files, vendored dependencies, and formatting-only lines from the comparison; measure source and tests consistently. Maintain essential behavioral, integration, and regression coverage within this budget; do not inflate application code to evade the limit.
 
-
 > **Workspace operating contract for Factory, Codex, and any other implementation agent.**
-> 
+>
 > **Project status:** specification complete, implementation not started. The repository contains `docs/SPEC.md` (current design), two historical proposals, a non-canonical `potential/` staging folder, `TASK.md`, `skills/`, and a `filetree.md` map. See §12.
 > **Primary user:** ChatGPT itself; Codex and other agents are secondary clients.
 > **First deliverable:** `SPEC.md`, produced only after reading both existing proposals. *(Delivered: [`docs/SPEC.md`](docs/SPEC.md). Next work is tracked in [`TASK.md`](TASK.md).)*
@@ -265,7 +264,6 @@ The core paradox is intentional:
 
 **Your first action was to read `docs/proposals/PROPOSAL.md` and `docs/proposals/PROPOSAL_2.md` and produce a newly reasoned `SPEC.md`. That is done ([`docs/SPEC.md`](docs/SPEC.md)); see §12 for the current next action.**
 
-
 ## 11. Current repository, non-canonical imports, and navigation (operator addendum — 2026-10-31)
 
 This section **adds to** the preceding contract. It does not replace the mission, and it takes precedence wherever an earlier suggestion conflicts with these updated operator requirements.
@@ -335,13 +333,35 @@ Enforce the **tests ≤ 1.15 × implementation** source-line limit at repository
 
 This section records what now exists and changes the next action. Everything in §0 to §11 still applies unless this section says otherwise.
 
+### The document layer routes; it does not absorb
+
+Each surface has one job. Read the one the task points at; do not read everything, and do not copy one surface into another.
+
+| Surface | Job | Read it when |
+| --- | --- | --- |
+| [`AGENTS.md`](AGENTS.md) | Operating rules and routing. **This file routes; it is not the semantic index of the repository.** | Entering the repo; checking whether an action is allowed. |
+| [`filetree.md`](filetree.md) | Birds-eye map of what exists and where to go next. Gains routing hints as the repo grows; never becomes a semantic router or a copy of other docs. | Orienting; finding the surface that owns a question. |
+| [`TASK.md`](TASK.md) | Next actions, lanes, gates. | Deciding what to do now. |
+| [`docs/SPEC.md`](docs/SPEC.md) | The design and its reasoning. | Implementing or questioning a design decision. |
+| [`NOTEPAD.md`](NOTEPAD.md) | Live, append-only working state while you work. | Starting work, hitting evidence that changes your model, failing informatively, handing off. |
+| [`CONTEXT.md`](CONTEXT.md) | Compact current keys: gate, hazards, deferred queue, open questions. | Re-entry; one read to orient. |
+| [`MEMORY.md`](MEMORY.md) | Durable findings with provenance: verified facts, rejected designs, doctrine, rationale. | Something looks surprising, or you are about to re-derive a decision. |
+| [`skills/`](skills/README.md) | Role instructions: plugin usage (ChatGPT), curation (Codex), building (implementers). | Before writing code, or before using the plugin in conversation. |
+
+Hierarchy per `NOTEPAD.md`: `AGENTS.md` → `NOTEPAD.md` → `CONTEXT.md` → `MEMORY.md`.
+
+**Working loop:** route in → write current state to `NOTEPAD.md` → act → observe → append what changed → validate → promote durable outcomes to `CONTEXT.md` / `MEMORY.md` → leave a re-entry route. Evolve these surfaces as you work so the next session resumes without reconstruction. Rules route; they do not forbid novelty.
+
 ### What exists now
 
 | Path | Status |
-|---|---|
-| [`docs/SPEC.md`](docs/SPEC.md) | **Current design (v0.1).** Written from both proposals and this file. It is the design to implement; the proposals are now historical inputs only. |
-| [`TASK.md`](TASK.md) | Active work board, phase by phase (P0 to P6). Tick boxes in the same commit as the work. |
-| [`skills/`](skills/) | Agent skills: `cognitive-workspace-usage` (ChatGPT in conversation; ships with the plugin), `cognitive-workspace-curator` (Codex), `cognitive-workspace-builder` (implementation agents). |
+| --- | --- |
+| [`docs/SPEC.md`](docs/SPEC.md) | **Current design (v0.1).** Written from both proposals and this file. It is the design to implement; the proposals are historical inputs only. |
+| [`TASK.md`](TASK.md) | Active board, P0 to P6, with lane assignment. Tick boxes in the same commit as the work. |
+| [`NOTEPAD.md`](NOTEPAD.md) | Agent workbook contract and templates. Append-only; correct with a dated correction, never a rewrite. |
+| [`CONTEXT.md`](CONTEXT.md) | Current gate, authoritative surfaces, architecture keys, hazards, deferred queue, open questions. |
+| [`MEMORY.md`](MEMORY.md) | Durable findings: operator doctrine, documented Sites facts, `potential/` verdicts, proposal rejections, store-split rationale, document-layer roles. |
+| [`skills/`](skills/) | `cognitive-workspace-usage` (ChatGPT; ships with the plugin), `cognitive-workspace-curator` (Codex), `cognitive-workspace-builder` (implementers). |
 | [`README.md`](README.md) | Overview and document links. |
 | `.gitignore` | Ignores `.surgeon/` (local editor cache), Node build output, local `*.db` files, and `.env` files. |
 
@@ -351,21 +371,23 @@ This section records what now exists and changes the next action. Everything in 
 
 - **Hosted first on ChatGPT Sites** (MCP server + D1 storage), with an opt-in npm local companion (`cwp`). The hosted service is request-driven; no hosted daemon is required.
 - **One TypeScript codebase** for hosted and local. `potential/` Python modules are mined for mechanisms only (SPEC §9.1).
-- **`major` / `minor`:** two logical stores with a hard boundary; two SQLite files locally; two D1 databases on Sites if allowed, otherwise prefixed tables in one. No cross-store foreign keys or queries.
+- **`major` / `minor`:** two logical stores with a hard boundary; two physical databases where the platform allows, prefixed tables where it does not. No cross-store foreign keys or queries either way.
 - **Six tools:** `workspace_open`, `workspace_note`, `workspace_recall`, `workspace_link`, `workspace_curate`, `workspace_status`. `workspace_state` and `workspace_consolidate` from §3 were folded into `open`/`recall` and `curate`.
 - **Best-guess session filing** with visible receipts and one-call refile; strict binding is a config option.
 - **No anonymous writes** on the hosted endpoint.
 
 ### Expected workflow from here
 
-1. **ChatGPT Work mode** clones this repository and builds the hosted Site + MCP server, starting with the P0 spike in `TASK.md`.
-2. **Codex / Factory** build the shared core (`src/core`, `src/store`, `src/mcp`) and the local `cwp mcp` entry (P1) in parallel.
-3. Every agent loads `skills/cognitive-workspace-builder/SKILL.md` before writing code.
+1. **ChatGPT Work mode (or Codex in Sites)** owns P0: the hosted Site + MCP server, built as the real product with the full `major` schema and the write/read/resume tools. Platform unknowns are answered while building, not by a throwaway spike.
+2. **Codex local / Factory** own P1: the same `src/core`, `src/store`, and `src/mcp` behind a local stdio host, so the core is testable without publishing a Site. P1 is not a separate prototype and must not fork the core.
+3. Every agent loads [`skills/cognitive-workspace-builder/SKILL.md`](skills/cognitive-workspace-builder/SKILL.md) before writing code.
+
+**Density over minimalism.** Do not shrink the first deployable slice to make it easy. Schema expressiveness, recall quality, and honest receipts are the product. §11's "stay small in execution scope" governs *how many candidate modules you transplant at once*, not how complete the first real server is.
 
 ### Hosting cost: verify, do not assume
 
-The operator's understanding is that ChatGPT Sites hosts MCP-backed Sites for free. OpenAI's help docs fetched on 2026-10-31 say building a Site counts toward Codex usage and that running and hosting usage (traffic, storage) is separate, with charges waived for Enterprise workspaces. The P0 spike must record what the operator's actual account shows and update SPEC §3.
+The operator's understanding is that ChatGPT Sites hosts MCP-backed Sites for free. OpenAI's help docs fetched on 2026-10-31 say building a Site counts toward Codex usage and that running and hosting usage (traffic, storage) is separate, with charges waived for Enterprise workspaces. Documentation cannot settle this; only the account can. P0 records what the account actually shows and updates SPEC §3 and `MEMORY.md` → `sites-facts-2026-10-31`.
 
 ### Immediate next action
 
-Read `docs/SPEC.md`, then work the first unchecked items in [`TASK.md`](TASK.md) (P0 and P1). Keep `filetree.md`, `TASK.md`, and the skills in step with every change.
+Read [`CONTEXT.md`](CONTEXT.md) for the current gate, then [`docs/SPEC.md`](docs/SPEC.md) for the sections your lane touches, then work the first unchecked items in [`TASK.md`](TASK.md). Open a `NOTEPAD.md` entry before the first substantive change. Keep `filetree.md`, `TASK.md`, `CONTEXT.md`, and the skills in step with every change.

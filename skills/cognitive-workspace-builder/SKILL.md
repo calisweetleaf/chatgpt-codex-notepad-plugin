@@ -7,10 +7,14 @@ description: Implementation guide for agents building, testing, or deploying the
 
 ## Read in this order
 
-1. [`AGENTS.md`](../../AGENTS.md): operator direction and hard rules.
-2. [`docs/SPEC.md`](../../docs/SPEC.md): the design you are implementing.
-3. [`TASK.md`](../../TASK.md): what to do next; tick boxes as you finish.
-4. [`filetree.md`](../../filetree.md): where things are.
+1. [`AGENTS.md`](../../AGENTS.md): operator direction and hard rules. §12 routes the rest.
+2. [`CONTEXT.md`](../../CONTEXT.md): current gate, hazards, open questions. One read to orient.
+3. [`docs/SPEC.md`](../../docs/SPEC.md): the design you are implementing. Read the sections your lane touches, not all of it.
+4. [`TASK.md`](../../TASK.md): what to do next; tick boxes as you finish.
+5. [`filetree.md`](../../filetree.md): where things are.
+6. [`MEMORY.md`](../../MEMORY.md): consult by key when a decision looks surprising, before re-deriving it.
+
+While you work, keep [`NOTEPAD.md`](../../NOTEPAD.md) alive: write before the first substantive edit, append when evidence changes your model or a command fails informatively, and promote durable outcomes into `CONTEXT.md` / `MEMORY.md`. It is append-only.
 
 The two files in `docs/proposals/` are historical inputs. Do not implement them directly.
 
