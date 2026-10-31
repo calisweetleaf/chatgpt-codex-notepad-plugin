@@ -57,10 +57,12 @@ Facts from OpenAI docs as of 2026-10-31 (see SPEC §3 for sources):
 - Pro and personal plans cannot share a Site-hosted plugin with other users.
 - Hosting cost: the docs say running/hosting usage is billed separately and waived for Enterprise. The operator expects free hosting. Confirm on the real account and record the result in SPEC §3.
 
+**Current deployment hold (operator direction, 2026-10-31):** Do not create/configure a Site, provision deployed storage, publish, or install the plugin during this turn. Continue local work. Deployment may resume after the application code, host adapter, MCP layer, migrations, and plugin package are locally ready. This is a sequencing hold, not a separate approval gate.
+
 Steps for ChatGPT Work mode or Codex:
 
 1. Open or create a private Site. Ask to add an MCP server backed by D1.
-2. Point it at this repository's `src/hosted` entry once it exists. Until then, do the P0 spike in `TASK.md` (`ping` + `echo_write`).
+2. Build the planned hosted vertical slice directly from `src/core`, `src/store`, and `src/mcp`; do not create a throwaway `ping` + `echo_write` spike. Record Sites runtime, transport, binding, identity, scheduling, outbound-HTTP, storage, and cost findings in `TASK.md` as they are observed.
 3. Publish as the Site owner. Install the plugin card. Complete the connection flow.
 4. Mention the plugin in a chat and call `workspace_status`, then `workspace_note`, then `workspace_recall` in a **new** chat.
 5. Repeat from Codex against the same plugin.

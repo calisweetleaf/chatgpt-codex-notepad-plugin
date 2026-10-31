@@ -1,16 +1,16 @@
 ---
 name: cognitive-workspace-curator
-description: Codex workflow for the Cognitive Workspace. Read ChatGPT's conversation notes to understand intent and design history, relate them to the live repository, add your own notes and links, and organize material into the derived minor store with workspace_curate. Never rewrite or delete ChatGPT's original notes.
+description: Codex workflow for the Cognitive Workspace. Read ChatGPT's conversation notes to understand intent and design history and relate them to the live repository. The current server exposes workspace_open, workspace_note, workspace_recall, and workspace_status; workspace_link and workspace_curate remain planned for P3. Never rewrite or delete ChatGPT's original notes.
 ---
 
 # Cognitive Workspace: Codex curator
 
-ChatGPT writes the conversation trail into `major`. You read it, connect it to code, and build organized views in `minor`. You never change the trail itself.
+ChatGPT writes the conversation trail into `major`. You read it and connect it to code without changing the trail. The currently implemented server has four tools and no `workspace_link` or `workspace_curate`; the P3 guidance below is for when those tools are added.
 
 ## Hard rules
 
 1. **Do not rewrite, correct, or delete another client's notes.** There is no tool for it, and you should not look for one. The operator's thinking is not a claim awaiting your adjudication; it is the material this workspace exists to keep. Your findings go in **your own** note, linked with `elaborates` or `relates_to`.
-2. **Derived material goes to `minor`** through `workspace_curate`. Digests and collections must point at the notes they came from (the server records this automatically).
+2. **Planned P3 behavior:** derived material goes to `minor` through `workspace_curate`. Digests and collections must point at the notes they came from (the server records this automatically). Do not call this tool unless it appears in the connected server's tool list.
 3. **Do not run a verification regime.** This workspace is not a fact checker (`MEMORY.md` → `doctrine-no-verification`). Do not score notes, mark them unsupported, label them stale for being speculative, or use `corrects` / `contradicts` to rule on the operator's thinking. Reserve `corrects` for correcting **your own** earlier note.
 4. **Code is authoritative about code, in code work only.** Before changing code because of a note, read the repository. If the code differs from what a note explored, that is a new observation to add beside it, not a defect in the note. Old, hypothetical, and abandoned designs stay as context.
 5. Keep named systems distinct (Aeron, Chiron, Kwisatz, SRA, Varys, Prescience, Adab-Nebulae, ASPS, USMS). Link them with `relates_to` or `version_of`; use `same_as` only if the operator stated it.
@@ -26,10 +26,10 @@ ChatGPT writes the conversation trail into `major`. You read it, connect it to c
      "about": ["varys@live-driver"], "refs": ["repo:somnus/sra@a1b2c3 src/varys/driver.py#forward"],
      "links": [{ "to": "n_8K1M", "relation": "answers" }] }
    ```
-5. Curate if the material is ready (below).
-6. `workspace_curate { "op": "stale" }` to see what else needs refreshing.
+5. If `workspace_curate` is exposed by the connected server (planned P3), curate material when ready; otherwise stop after the available read/note operations.
+6. If exposed, `workspace_curate { "op": "stale" }` shows what needs refreshing. It is unavailable in the current four-tool server.
 
-## Curation operations
+## Planned P3 curation operations (not available in the current four-tool server)
 
 | Op | Purpose | Example |
 |---|---|---|

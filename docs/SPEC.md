@@ -1,6 +1,6 @@
 # SPEC.md: Cognitive Workspace Plugin
 
-**Status:** Draft v0.1, first reasoned specification. Not yet implemented.
+**Status:** Draft v0.1, design baseline. Implementation is in progress; the system is not deployed or operational.
 **Date:** 2026-10-31
 **Inputs:** [`AGENTS.md`](../AGENTS.md) (governing operator direction), [`proposals/PROPOSAL.md`](proposals/PROPOSAL.md) (CBCW), [`proposals/PROPOSAL_2.md`](proposals/PROPOSAL_2.md) (Somnus Research Ledger), the six candidate modules in [`../potential/`](../potential/), current OpenAI documentation on ChatGPT Sites and plugins (fetched 2026-10-31), and operator-forwarded ChatGPT commentary (treated as non-binding input).
 **Location note:** `AGENTS.md` §0 asks for `SPEC.md` at the repository root. The operator explicitly requested it under `docs/`. The active operator instruction wins; the root [`README.md`](../README.md) links here.
@@ -81,7 +81,7 @@ Both proposals were written before the operator narrowed the mission. They share
 
 1. **Binding strictness.** PROPOSAL argues that silent misfiling corrupts research state. This spec argues that refusal loses more than misfiling. Resolution test: measure the misfile rate in the P1 dogfood (§13). If it exceeds about 5% of writes in multi-chat days, switch the default to `strict_binding = true`.
 2. **Granularity.** PROPOSAL asks whether event-level notes are enough for dense architecture work. This spec bets that free text plus edges and handles is enough for V1, and that richer structure belongs in `minor` as derived views. Revisit after the first 1,000 real notes.
-3. **Physical store split on Sites.** §5 depends on whether a Site can bind more than one database. Unknown until the P0 spike.
+3. **Physical store split on Sites.** §5 depends on whether a Site can bind more than one database. Unknown until the P0 implementation records the actual Site binding behavior.
 
 ---
 
@@ -169,7 +169,7 @@ A ref or handle can carry a `version` label (`"varys@live-driver"`, `"varys@hist
 **Two logical stores with a hard boundary, physically two SQLite databases wherever the platform allows, and prefixed namespaces in one database where it does not.**
 
 - Local companion: `major.db` and `minor.db`, two files.
-- Hosted on Sites: two D1 databases if a Site can bind two; otherwise one D1 database with `major_*` and `minor_*` tables. The P0 spike decides.
+- Hosted on Sites: two D1 databases if a Site can bind two; otherwise one D1 database with `major_*` and `minor_*` tables. The active P0 build records the actual binding behavior before selecting the deployed layout.
 - In both modes all tables are prefixed (`major_notes`, `minor_digests`) and **no foreign key or query crosses the boundary**. Cross-store references are by ID only. The same DDL and the same queries run in both layouts.
 
 ### 5.2 Why two files beat one when available
@@ -501,7 +501,18 @@ All fields optional; `{}` equals `view: "now"`.
 
 Assembly algorithm (V1, deterministic, no model needed):
 
-1. **Scope** from `view` (thread notes, day notes, session notes, handle mentions, or notes after the previous session's `last_seen_at`).
+| `view` | Scope and rendering |
+| --- | --- |
+| `now` (default) | Notes in the current project scope, plus the route, open strands, and unanswered questions in the orientation text. |
+| `project` | Notes in the current project scope. This is a broad overview; `now` adds orientation material. |
+| `thread` | The named thread, or the active thread for the session when `thread` is omitted. |
+| `today` | Notes recorded on the workspace-local current day. |
+| `session` | Notes from the current session. |
+| `since_last` | Notes recorded after the previous session's `last_seen_at`, when a previous session exists. |
+| `detours` | Notes in threads with a parent thread. |
+| `handle` | Requires `about`; returns notes mentioning that handle or its versioned names. |
+
+1. **Scope** from the table above. `project` and `now` intentionally use the broad current-project note scope; `now` adds orientation material rather than narrowing the note set.
 2. **Hits** from FTS5 bm25 if `query` is present, else recency within scope.
 3. **Expand** each hit to its neighborhood: up to 2 notes before and after in the same thread, plus edge neighbors (`contradicts`, `corrects`, `returns_to`, `answers`).
 4. **Group** by thread, order by time, mark pivots, branches, returns.
@@ -583,7 +594,7 @@ No Adab, USMS, or knowledge-graph dependency enters the MVP.
 
 ### 10.1 Hosted (default): ChatGPT Sites
 
-- Entry point `src/hosted/` exposes the six tools over the transport Sites expects for MCP servers (confirmed in P0).
+- Planned entry point `src/hosted/` exposes the six-tool surface over the MCP transport accepted by Sites. P0 implements `workspace_open`, `workspace_note`, `workspace_recall`, and `workspace_status`; P3 adds `workspace_link` and `workspace_curate`. The transport and hosted behavior remain unverified until exercised on a Site.
 - Storage: D1, layout per §5.1.
 - Auth: §11.1.
 - Republish on any tool-schema change (documented Sites behavior). Tool schemas are versioned in `src/mcp/` so a change is deliberate.
@@ -703,7 +714,7 @@ Only `major` syncs. `minor` is rebuilt per node.
 | **P5 Semantic** | Embeddings, hybrid ranking, echo associations, optional worker. | Recall quality improves on a fixed query set without breaking any earlier scenario with the worker off. |
 | **P6 Status UI** | Small read-only page: health, recent threads, export button. | Operator can inspect and export without CLI. |
 
-Proposed layout once code starts:
+Planned code layout (implementation is underway):
 
 ```text
 src/core/  src/store/  src/mcp/  src/hosted/  src/local/  src/worker/
@@ -754,3 +765,4 @@ test/      scripts/count-lines.mjs   package.json   tsconfig.json
 
 - 2026-10-31: v0.1 drafted from both proposals, `AGENTS.md`, `potential/` outlines, and current Sites/plugin documentation. No code yet.
 - 2026-10-31: §15 P0 rescoped from a `ping` + `echo_write` spike to the full hosted vertical slice, at operator direction (density over minimalism). Platform findings are now recorded during the build. Document layer extended with `NOTEPAD.md`, `CONTEXT.md`, `MEMORY.md`; durable rationale for §2, §3, §5, and §9.1 mirrored into `MEMORY.md` keys.
+- 2026-10-31: Implementation started with package/config scaffolding, the initial major/minor migration, shared database interface, SQLite adapter, and workspace core. MCP tools, hosted entry, deployment, and real-client behavior remain unverified.

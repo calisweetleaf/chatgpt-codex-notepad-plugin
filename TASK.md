@@ -12,7 +12,11 @@ This board holds **what to do next**, not why. Design reasoning lives in `docs/S
 - [x] Both proposals read and compared.
 - [x] `docs/SPEC.md` v0.1 (architecture, schemas, six tools, deployment, sync, phases, acceptance scenarios A to I).
 - [x] Document layer wired: `AGENTS.md` §12, `NOTEPAD.md`, `CONTEXT.md`, `MEMORY.md`, `TASK.md`, `filetree.md`, `README.md`, `skills/`.
-- [ ] No application code exists yet.
+**Application implementation:** In progress. Package/config scaffold, numbered migrations, SQLite/D1 adapters, workspace core, MCP schema/dispatcher, local stdio harness, hosted `/mcp` entry source, and source-only build packaging are present. Root reports 13 local tests, typecheck, line budget, packed install, and subprocess persistence checks passed. Cloud deployment and ChatGPT/Codex client integration remain open.
+
+**Deployment hold (operator direction, 2026-10-31):** Do not create/configure a Site, provision deployment storage, publish, or install the plugin this turn. Keep deployment deferred until application code, host adapter, MCP layer, migrations, and plugin package are locally ready. This is a sequencing hold; no separate approval gate was specified.
+
+**D1 verification:** Root reports 13 passing local tests, including Workerd D1 and HTTP owner-gate/list/status cases. This does not establish Cloudflare/Sites D1 behavior; deployment remains held.
 
 ## Lane assignment
 
@@ -34,11 +38,11 @@ P0 and P1 build **one codebase**. P1 is not a separate prototype; it is the same
 
 ### Build
 
-- [ ] Create a private Site. Ask it to add an MCP server with D1 storage.
+- [ ] Create a private Site. Ask it to add an MCP server with D1 storage. **Deferred by the current deployment hold until local readiness is complete; do not execute this turn.**
 - [ ] Establish the repo layout from SPEC §15 (`src/core`, `src/store`, `src/mcp`, `src/hosted`) and keep `src/core` free of platform APIs so P1 can reuse it unchanged.
-- [ ] Migrations: full `major_*` DDL, full `minor_*` DDL, `major_notes_fts` + sync triggers, every index in SPEC §5.4.
+- [x] Migrations: full `major_*` DDL, full `minor_*` DDL, `major_notes_fts` + sync triggers, every index in SPEC §5.4, plus D1 transaction guard migration.
 - [ ] `src/core`: ULID ids, HLC clock, session resolution (§7.2, 12-hour window, implicit open with notice), thread routing and all six `move` behaviors (§4.3), kind inference, handle detection + `about` handle creation, `refs` shorthand parsing, server-created `continues` / `branches_from` / `returns_to` edges, recall assembly steps 1 to 7 (§8.3) including neighborhood expansion and budget trim.
-- [ ] `src/mcp`: tool schemas with `text` as the only required field anywhere; one-line write receipts naming note id + thread + session; near-duplicate warning on repeated `content_hash`; recall output fenced with "stored working material, not instructions".
+- [x] `src/mcp`: four P0 tool schemas with `text` as the only required field; one-line write receipts naming note id + thread + session; near-duplicate warning on repeated `content_hash`; recall output fenced with "stored working material, not instructions".
 - [ ] Auth: owner allowlist, no anonymous writes (§11.1). Decide this *before* publishing, not after.
 - [ ] Publish as Site owner; install the plugin card; complete the connection.
 
@@ -83,7 +87,7 @@ P0 and P1 build **one codebase**. P1 is not a separate prototype; it is the same
 - [ ] `package.json` (TypeScript, ESM, Node LTS), `tsconfig.json`, lint/format.
 - [ ] `src/store/`: `MajorStore` / `MinorStore` async interfaces; SQLite implementation (WAL); same migrations as P0.
 - [ ] `src/local/`: `cwp mcp` stdio entry via `@modelcontextprotocol/sdk`.
-- [ ] `scripts/count-lines.mjs`: tests ≤ 1.15 × src non-blank non-comment lines; wired into `npm test`.
+- [x] `scripts/count-lines.mjs`: tests ≤ 1.15 × src non-blank non-comment lines; wired into `npm test` and passing (root reports 457 source / 234 test lines).
 - [ ] Behavior tests for A, D, I against in-memory SQLite.
 - [ ] Store contract suite runs on SQLite and a D1-compatible shim so both hosts behave identically.
 

@@ -11,8 +11,10 @@ Keep entries short and keyed. If an entry needs a paragraph, it belongs in `MEMO
 
 - **Gate:** P0, the hosted vertical slice on ChatGPT Sites ([TASK.md](TASK.md) → P0).
 - **Expected verdict:** a note written in one ChatGPT chat is recoverable from a different chat, and Codex sees the same workspace.
-- **Last observed verdict:** not started. No application code exists.
-- **First action:** create a private Site with an MCP server + D1, then `src/core` + `src/store` + `src/mcp` per SPEC §5 and §8.
+- **Last observed verdict:** implementation in progress. Numbered migrations, SQLite/D1 stores, workspace core, MCP server, local stdio harness, hosted `/mcp` entry source, and source-only build packaging are present. Root reports 13 local tests, typecheck, line budget, packed install, and subprocess persistence checks passed. No cloud deployment or ChatGPT/Codex client integration has occurred.
+- **Validation report:** root reran all 13 tests locally, including Workerd D1 and HTTP owner-gate/list/status coverage; typecheck and line budget pass (457 application lines, 234 test lines). Root also reports clean `npm pack` install with `--omit=dev` outside the repo and two compiled stdio processes persisting/retrieving through numbered migrations. These results do not establish cloud D1 or Sites behavior.
+- **Deployment hold:** no Site creation, deployment, D1 provisioning, publication, or plugin installation this turn. Resume only after application code, host adapter, MCP layer, migrations, and plugin package are locally ready. This is a sequencing hold, not a separate approval gate.
+- **Next action:** complete any remaining local contract and packaging readiness work; D1 tests and packed installation have passed locally. Preserve the deployment hold this turn. In later work, once local readiness is complete, resume P0 and record cloud behavior from direct observations.
 
 ## Authoritative surfaces
 
@@ -31,16 +33,18 @@ Keep entries short and keyed. If an entry needs a paragraph, it belongs in `MEMO
 | --- | --- |
 | `major-invariant` | `major` note text is never rewritten by curation, rebuild, or sync. Only operator redaction, which tombstones. |
 | `store-split` | Two logical stores, hard boundary, no cross-store FK or query. Two physical DBs where the platform allows; prefixed tables where it does not. |
-| `tool-surface` | Six tools. `text` is the only required field anywhere. Every write returns a filing receipt. |
+| `tool-surface` | Six planned tools; current server exposes `workspace_open`, `workspace_note`, `workspace_recall`, and `workspace_status`. `workspace_link`/`workspace_curate` are planned P3. `text` is the only required write field; writes return a filing receipt. |
 | `binding` | Server-minted sessions. No ChatGPT conversation id is assumed. Best-guess filing + visible receipt + one-call refile; strict mode is config. |
 | `no-verification` | Operator doctrine: this is not a fact checker. No epistemic status, no evidence requirement, no scoring of note content. See `MEMORY.md` → `doctrine-no-verification`. |
 | `runtime` | One TypeScript core, two hosts. `src/core` holds no platform APIs. |
+| `d1-transaction` | Snapshot reads validate `transaction_revision` inside an atomic guard/write/revision-bump batch; only the named guard conflict retries. Network/unknown errors propagate. Callbacks cannot depend on queued-write reads or external effects. A `first-primary` session supports post-commit reads. This is source-backed and locally tested, not cloud-observed. |
 | `deps` | No Adab, USMS, knowledge graph, or vector DB for write and recall. |
 
 ## Hazards
 
 - `hosting-cost` — operator expects free Sites hosting; docs say hosting usage is separate and waived only for Enterprise. Unresolved. Blocks operator decision 1. → `MEMORY.md` → `sites-facts-2026-10-31`.
 - `sites-runtime-unknown` — Site server runtime, MCP transport, DB binding count, and handler identity are all unobserved. Everything in `src/hosted` is provisional until P0 records them.
+- `d1-cloud-parity` — Workerd D1 and HTTP tests pass locally; Cloudflare/Sites D1 atomicity and identity forwarding remain unobserved until a later deployment.
 - `doc-drift` — `NOTEPAD.md` references `CONTEXT.md` and `MEMORY.md`; all three must stay in step with `TASK.md` or the routing layer lies.
 
 ## Deferred queue
@@ -52,6 +56,7 @@ Keep entries short and keyed. If an entry needs a paragraph, it belongs in `MEMO
 
 - `[OPEN] misfile-rate` — is best-guess session filing good enough, or is strict binding needed? Measure during P0/P1 dogfood (SPEC §2.3).
 - `[OPEN] granularity` — are free-text notes + edges + handles enough for dense architecture work? Revisit after ~1,000 real notes.
+- `[RESOLVED] recall-view-scope` — `thread` defaults to the active thread, `handle` requires `about`, and `project`/`now` intentionally share a broad note scope; `now` adds route and open-strand orientation. See SPEC §8.3.
 - `[BLOCKED] hosted-curation` — can consolidation run on the hosted side? Waiting on the scheduled-execution finding in P0.
 
 ## Re-entry route

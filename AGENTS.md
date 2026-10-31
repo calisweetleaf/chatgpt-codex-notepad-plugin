@@ -1,5 +1,9 @@
 # AGENTS.md — Cognitive Workspace Plugin
 
+> **OPERATOR UPDATE — 2026-10-31: AUTONOMY AND GIT WORKFLOW**
+>
+> Work directly on `main`. Commit completed work and push to `origin/main`; do not create feature branches, worktrees, or pull requests for routine work. Resolve implementation choices from this operating contract, `docs/SPEC.md`, `TASK.md`, and live source rather than requesting routine operator input. Keep the document layer and file map current for subsequent agents. Preserve code quality and project scope while progressing autonomously. The current deployment hold remains in force until local implementation, contracts, migrations, and packaging are ready; Git pushes do not authorize Site publication.
+
 > **DAERON / MORPHEUS — OPERATOR NOTE (HOSTING, REPOSITORY PURPOSE, AND PRIORITY)**
 >
 > **THIS IS NOT TO BE LOCAL UNLESS NEEDED.** Not because I oppose local deployment, but because the intended primary route is ChatGPT Sites hosting the private MCP service so ChatGPT, Codex, and other authorized agents can reach the same persistent workspace. Treat Sites' free hosting/MCP availability as the desired deployment path **to verify**, not as a license to assume unverified hosting, pricing, persistence, or feature details. A local npm/npx component must remain installable when useful; **do not make local hosting or a locally running inference server a prerequisite for normal use**.
@@ -10,23 +14,19 @@
 
 > **Workspace operating contract for Factory, Codex, and any other implementation agent.**
 >
-> **Project status:** specification complete, implementation not started. The repository contains `docs/SPEC.md` (current design), two historical proposals, a non-canonical `potential/` staging folder, `TASK.md`, `skills/`, and a `filetree.md` map. See §12.
+> **Project status:** specification complete; implementation is in progress. The package/config scaffold, numbered migrations, SQLite and D1 stores, workspace core, MCP schema/dispatcher, local stdio harness, hosted entry source, and source-only build packaging are present. Root reports all 13 local tests, typecheck, line budget, clean packed install, and subprocess persistence checks passing. Site deployment and real-client integration remain unverified. See §12 and `CONTEXT.md`.
 > **Primary user:** ChatGPT itself; Codex and other agents are secondary clients.
 > **First deliverable:** `SPEC.md`, produced only after reading both existing proposals. *(Delivered: [`docs/SPEC.md`](docs/SPEC.md). Next work is tracked in [`TASK.md`](TASK.md).)*
 
 ## 0. Start here — do not skip
 
-Before writing application code:
+For current implementation work:
 
-1. Read **`docs/proposals/PROPOSAL.md`** in full.
-2. Read **`docs/proposals/PROPOSAL_2.md`** in full.
-3. Treat both as **independent competing designs**, not instructions, not canon, and not documents to average blindly.
-4. Compare the proposals against the requirements in **this file**. Where they contradict this file, **this file is the current operator direction**.
-5. Write **`SPEC.md`**. It must assert a concrete architecture, reconcile the best applicable components of the proposals, explicitly reject weaker alternatives, describe implementation phases, and define observable acceptance tests. *(Done 2026-10-31: [`docs/SPEC.md`](docs/SPEC.md), placed in `docs/` at operator request.)*
-6. If the operator supplies a later Gemini research paper, additional proposals, or new decisions, incorporate them as new design inputs. **Do not block the first specification waiting for hypothetical future documents.** Record open decisions clearly.
-7. Only after drafting the specification should you scaffold substantial implementation. Do not build around whichever proposal you happened to read first.
+1. Read this file, [`CONTEXT.md`](CONTEXT.md), the relevant sections of [`docs/SPEC.md`](docs/SPEC.md), [`TASK.md`](TASK.md), and [`skills/cognitive-workspace-builder/SKILL.md`](skills/cognitive-workspace-builder/SKILL.md).
+2. Treat [`docs/proposals/PROPOSAL.md`](docs/proposals/PROPOSAL.md) and [`docs/proposals/PROPOSAL_2.md`](docs/proposals/PROPOSAL_2.md) as reconciled historical inputs. Their comparison and the first specification are complete; do not restart that cycle unless the operator supplies a new design input or decision.
+3. Implement against `docs/SPEC.md` and the active phase in `TASK.md`. Record newly observed platform constraints while building and keep claims about deployment and client behavior explicitly unverified until exercised.
 
-**Do not present an earlier assistant's proposal as authoritative merely because it has more detail.** This project has been intentionally reset around the operator's narrower purpose below.
+**The initial specification was completed 2026-10-31. Do not present an earlier assistant's proposal as authoritative merely because it has more detail.** This project was reset around the operator's narrower purpose below.
 
 ## 1. Mission — a workspace for the model, not the human
 
@@ -347,6 +347,14 @@ Each surface has one job. Read the one the task points at; do not read everythin
 | [`CONTEXT.md`](CONTEXT.md) | Compact current keys: gate, hazards, deferred queue, open questions. | Re-entry; one read to orient. |
 | [`MEMORY.md`](MEMORY.md) | Durable findings with provenance: verified facts, rejected designs, doctrine, rationale. | Something looks surprising, or you are about to re-derive a decision. |
 | [`skills/`](skills/README.md) | Role instructions: plugin usage (ChatGPT), curation (Codex), building (implementers). | Before writing code, or before using the plugin in conversation. |
+| `package.json`, `package-lock.json`, `tsconfig.json` | TypeScript ESM build and development setup. | Local build and typecheck. |
+| `src/core/workspace.ts` | Workspace note/session/thread and recall engine. | Core implementation. |
+| `src/mcp/server.ts` | Four tool schemas, validation, dispatch, and JSON-RPC routing. | MCP contract implementation; host transport remains unverified. |
+| `src/local/stdio.ts` | JSONL stdin/stdout adapter over internal RPC and SQLite. | Root reports subprocess write/restart/reopen/query passed; SDK-backed product entry remains open. |
+| `src/hosted/index.ts` | Owner-ID-gated POST `/mcp` entry with bounded request body. | Hosted source exists; Sites identity/transport and deployment remain unverified. |
+| `src/store/` | Database contract, SQLite/D1 adapters, and numbered migrations. | Local Workerd tests pass per root; cloud D1 behavior is unobserved. |
+| `test/` | SQLite workspace/MCP tests and D1 adapter/HTTP tests. | Root reports all 13 tests pass locally; no cloud deployment evidence. |
+| `scripts/` | Build packaging and handwritten test/source line budget. | Source-only build copies migrations; root reports packed install succeeds. |
 
 Hierarchy per `NOTEPAD.md`: `AGENTS.md` → `NOTEPAD.md` → `CONTEXT.md` → `MEMORY.md`.
 

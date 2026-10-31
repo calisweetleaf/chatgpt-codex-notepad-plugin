@@ -2,7 +2,7 @@
 
 A persistent external notepad for ChatGPT (and Codex), exposed as an MCP server. It lets the assistant write short working notes during a research conversation and later recover the path of that conversation (threads, detours, returns, open questions) in a new or compacted chat.
 
-**Status:** design settled, implementation not started. Next step is P0 in [`TASK.md`](TASK.md): the hosted Site + MCP server.
+**Status:** implementation in progress. Package/config scaffolding, numbered migrations, SQLite/D1 stores, workspace core, MCP schema/dispatcher, local stdio harness, and hosted entry source are present. Root reports 13 local tests, typecheck, line budget, packed install, and subprocess persistence checks passed. No cloud deployment or ChatGPT/Codex client integration has occurred; see [`TASK.md`](TASK.md).
 
 ## Documents
 
@@ -16,6 +16,8 @@ A persistent external notepad for ChatGPT (and Codex), exposed as an MCP server.
 | [`MEMORY.md`](MEMORY.md) | Durable findings by key: operator doctrine, documented Sites facts, `potential/` verdicts, rejected designs, rationale. |
 | [`skills/`](skills/README.md) | Role skills: plugin usage (ChatGPT), curation (Codex), building and deploying (implementers). |
 | [`filetree.md`](filetree.md) | Birds-eye map with routing hints. |
+| [`src/`](src/) and [`test/`](test/) | Initial TypeScript workspace/store/MCP implementation and local SQLite behavior coverage; hosted MCP integration is not yet present. |
+| [`package.json`](package.json) and [`scripts/count-lines.mjs`](scripts/count-lines.mjs) | Build/typecheck/test commands and the handwritten test-size budget. |
 | [`docs/proposals/`](docs/proposals) | The two independent input proposals. Historical; reconciled in SPEC §2. |
 | [`potential/`](potential/) | Candidate Adab-Nebulae modules kept for reference. Never imported; verdicts in SPEC §9.1. |
 

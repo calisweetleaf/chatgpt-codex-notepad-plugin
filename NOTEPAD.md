@@ -777,3 +777,112 @@ That is the contract.
 - **First action:** create the Site and ask it to add an MCP server with D1 storage; capture the runtime and transport it gives you before writing host code.
 - **Preserve:** `major` append-only; no cross-store query or FK; `text` as the only required tool field; auth decided before publishing.
 - **Avoid repeating:** re-reading both proposals (reconciled in SPEC §2), re-evaluating `potential/` (verdicts in `MEMORY.md`), and re-checking hosting cost in documentation.
+
+## 2026-10-31 | Codex | P0 implementation documentation | OPEN
+
+### Intake
+
+- **Task as understood:** Keep `NOTEPAD.md`, `TASK.md`, `CONTEXT.md`, and `filetree.md` aligned with the first application code landing; report current documentation contradictions to the implementation owner.
+- **Operator constraint:** Build now; do not restart the specification cycle. This lane owns documentation only.
+- **Current lane:** DOCS.
+- **Authority loaded:** `AGENTS.md`, `CONTEXT.md`, `TASK.md`, `skills/cognitive-workspace-builder/SKILL.md`, `docs/SPEC.md`, and the supplied `defense-grade-doc-engine` instructions.
+- **Base state:** clone at `9872573`; working tree clean at intake; no application code had landed when this entry was written.
+- **Role allocation:** root owns implementation/deployment; `prod_finalizer` and `fletcher` handle their assigned implementation lanes; this agent maintains documentation alignment as code lands.
+
+### Initial Working Model
+
+- `OBSERVED` — `git log -1 --oneline` identifies the clone as `9872573`; `git status --short` was empty at intake.
+- `OBSERVED` — `src/` and `package.json` were absent at intake; `filetree.md` lists the planned code layout as not yet created.
+- `OBSERVED` — the implementation is beginning now, so the prior “not started” status is accurate only for this intake point and must be updated as files land.
+- `UNKNOWN` — hosted runtime, MCP transport, storage bindings, and deployed-client behavior remain unobserved.
+- `HAZARD` — do not document code, validation, or deployment as complete until directly observed.
+
+### Immediate Route
+
+Track code landing from the implementation owners → update the task checklist and file map for actual files → record only observed validation and leave hosted-client claims open until exercised.
+
+### Tooling boundary
+
+- `OBSERVED` — this session exposes neither the role-scoped Colony nor native Surgeon tools; the documented Surgeon package is unavailable through the session skill loader. Root authorized `apply_patch` as the available fallback for this documentation lane.
+- `UNKNOWN` — no Colony sniff/claim or Surgeon receipt is available from this session; do not claim either occurred.
+
+### 2026-10-31 | CHECKPOINT | implementation-scaffold
+
+- `OBSERVED` — shared tree now contains `package.json`, `package-lock.json`, `tsconfig.json`, `scripts/count-lines.mjs`, and `src/store/migrations/0001.sql`; no other `src/` files were present at the check.
+- `OBSERVED` — prod_finalizer reports `npm install` succeeded, the line-budget script succeeded with no source/tests, and initial typecheck returned TS18003 because no TypeScript inputs had landed. These are agent-reported results, not independently rerun here.
+- `MEANS` — implementation has started, but core/tool/host behavior and the P0 client outcome remain unverified.
+- `DO` — keep TASK, CONTEXT, and filetree aligned as core/MCP/host files land; do not check off complete schema/behavior or deployment steps until their acceptance evidence exists.
+
+### 2026-10-31 | CHECKPOINT | local-core-tests-reported
+
+- `OBSERVED` — shared tree now also contains `src/core/workspace.ts`, `src/store/database.ts`, `src/store/sqlite.ts`, and `test/workspace.test.ts`.
+- `SMELL` — prod_finalizer reports `npm test` passes four SQLite behavior tests, typecheck, and the line budget (229 application lines; 64 test lines). This is not independently verified in the documentation lane. `[UNVERIFIED — CONFIRM BEFORE OPERATIONAL USE]`
+- `OBSERVED` — fletcher says a recall view-scope question has been sent to root; this lane has not resolved it.
+- `MEANS` — local engine validation, if the reported result is confirmed, does not establish hosted runtime, authentication, Sites storage, publishing, or cross-client behavior.
+- `DO` — keep hosted and real-client acceptance open; align the map to the new test file.
+
+### 2026-10-31 | CHECKPOINT | recall-scope-and-test-update
+
+- `OBSERVED` — inspection of `src/core/workspace.ts` confirms distinct predicates for `today`, `session`, `since_last`, and `detours`; `thread` filtering is conditional on `input.thread`; `project`, `handle`, and default `now` have no separate base predicate.
+- `OPEN` — this does not match the full enum/scope contract described in SPEC §8.3. Root has been notified; keep `recall-view-scope` open until implementation or contract is reconciled.
+- `SMELL` — prod_finalizer reports a later `npm test` run with nine passing SQLite tests, typecheck, and line budget (254 source lines; 103 test lines); ULID is now a runtime dependency. Not independently verified in this documentation lane. `[UNVERIFIED — CONFIRM BEFORE OPERATIONAL USE]`
+- `MEANS` — reported local tests do not establish hosted runtime, authentication, publishing, or cross-client behavior.
+
+### 2026-10-31 | CHECKPOINT | mcp-dispatcher-landed
+
+- `OBSERVED` — `src/mcp/server.ts` is now present with four tool schemas, argument validation, `callTool` dispatch, and JSON-RPC routing.
+- `OBSERVED` — no test file for the MCP dispatcher or hosted entry was present at the check; hosted entry and real-client behavior remain unverified.
+- `MEANS` — the earlier reported `npm test` result predates this file and does not establish its behavior.
+- `DO` — keep TASK acceptance for MCP calls, hosting, and cross-client use open until validated.
+
+### 2026-10-31 | CHECKPOINT | recall-contract-resolved-and-mcp-rpc-tests
+
+- `OBSERVED` — root clarified that `project` and default `now` intentionally use a broad project scope; `now` adds route ancestry, open strands, and unanswered questions. `thread` uses the active thread when no thread is named; `handle` requires `about`.
+- `OBSERVED` — the corresponding view semantics are now explicit in SPEC §8.3. The previous `recall-view-scope` concern is resolved as a design clarification.
+- `SMELL` — prod_finalizer reports eleven passing tests, including in-process MCP RPC discovery/list/call and validation/error paths, plus typecheck and line budget. Not independently run in this documentation lane; live transport and client integration are untested. `[UNVERIFIED — CONFIRM BEFORE OPERATIONAL USE]`
+- `OBSERVED` — direct `SQLiteDatabase.all`/`run` calls bypass the transaction callback queue; `Workspace` currently invokes operations inside transaction callbacks. Bounded hazard recorded in CONTEXT.
+
+### 2026-10-31 | CHECKPOINT | local-stdio-harness-landed
+
+- `OBSERVED` — `src/local/stdio.ts` now reads one JSON-RPC request per stdin line, writes responses to stdout, opens the SQLite database from argv (default `:memory:`), and applies the migration on first open.
+- `UNKNOWN` — no manual client session across the process boundary has been reported; the P1 stdio acceptance item remains open.
+- `OPEN` — TASK P1 specifies `@modelcontextprotocol/sdk`; current `stdio.ts` uses the project's internal JSON-RPC router. Root has been asked whether that dependency requirement is intentionally superseded.
+
+### 2026-10-31 | CHECKPOINT | subprocess-stdio-check-reported
+
+- `OBSERVED` — root reports a subprocess JSONL MCP check passed `tools/list`, write, process restart using the same disk-backed SQLite file, then open/query of the saved marker.
+- `MEANS` — this covers the current custom JSON-RPC-over-stdio development harness across process restart. It does not satisfy the still-open SDK-backed local product item or prove ChatGPT Sites deployment/client sharing.
+- `OBSERVED` — root directs that P0 remains unchecked because no hosted Site has been created; the current delivery is partial P0 groundwork.
+
+### 2026-10-31 | CHECKPOINT | sqlite-serialization-limitation-resolved
+
+- `OBSERVED` — root reports SQLite direct-query bypass is fixed through AsyncLocalStorage transaction-scope serialization.
+- `OBSERVED` — root reports Terra's deterministic commit/rollback regression and the final 12-test suite pass (356 application lines; 150 test lines).
+- `CORRECTION` — the earlier `sqlite-direct-access` hazard in `CONTEXT.md` is resolved and removed from current hazards.
+- `UNKNOWN` — this documentation lane did not independently run the test suite; these results are attributed to root.
+
+## 2026-10-31 | Codex | P0 deployment sequencing hold | OPEN
+
+- **Operator direction:** hold all deployment this turn. Do not create/configure a Site, provision deployed D1, publish, or install the plugin.
+- **Resume condition:** application code, host adapter, MCP layer, migrations, and plugin package are locally ready.
+- **Approval boundary:** this is a sequencing hold only; the operator did not add a separate approval gate after readiness.
+- **Current work:** continue local implementation and validation. Root is investigating D1 adapter atomicity/read-your-writes behavior; no confirmed finding has been received by this documentation lane yet.
+- **Docs updated:** `CONTEXT.md`, `TASK.md`, and the builder skill now route around deployment until readiness.
+
+### 2026-10-31 | CHECKPOINT | local-readiness-validation-and-reentry
+
+- `OBSERVED` — root reports commit `1ce67b2` contains source, tests, build packaging, and filetree; documentation changes remain separate.
+- `OBSERVED` — root reran `npm test`: all 13 passed, including Workerd D1 and HTTP tests; typecheck and line budget passed at 457 application / 234 test lines.
+- `OBSERVED` — root reports clean `npm pack` installation with `--omit=dev` outside the repo, and two compiled stdio processes persisted/recalled data across restart with numbered migrations.
+- `MEANS` — this is local validation only. Cloud D1/Sites behavior, deployment, and ChatGPT/Codex integration remain unverified.
+- `OBSERVED` — usage and curator skills now distinguish the current four tools from planned P3 `workspace_link` and `workspace_curate`; P0 migration, four-tool schema, and P1 line-budget checks are marked complete in TASK.
+- `PRESERVE` — deployment remains held this turn. Re-entry: `1ce67b2` → `TASK.md` current gate → complete any local readiness work; do not create/publish a Site this turn.
+
+### 2026-10-31 | CHECKPOINT | d1-and-hosted-source-landed
+
+- `OBSERVED` — new files are present: `src/store/d1.ts`, `src/store/migrations/0002.sql`, `src/hosted/index.ts`, `scripts/build.mjs`, `tsconfig.build.json`, and `test/d1.test.ts`.
+- `OBSERVED` — D1 adapter contract: reads use the transaction snapshot; writes are staged into a revision-guarded batch, and retry is limited to the named guard conflict. Core operations must not rely on reading queued writes from the same callback.
+- `OBSERVED` — hosted source gates `/mcp` on configured owner ID, requires the matching identity header, accepts POST JSON, and bounds the body. Sites behavior and identity forwarding remain unverified because no deployment occurred.
+- `UNKNOWN` — D1 test execution is pending Terra. No D1 atomicity result is claimed yet.
+- `OBSERVED` — build config compiles source only and copies migrations to `dist`; local stdio now applies numbered migrations.
+- `PRESERVE` — deployment hold remains active until all named local-readiness conditions are met; no Site setup or publication this turn.

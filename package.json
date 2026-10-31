@@ -1,0 +1,26 @@
+{
+  "name": "cognitive-workspace-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "files": ["dist", "skills/cognitive-workspace-usage", "skills/cognitive-workspace-curator", "README.md"],
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run typecheck && node --import tsx --test 'test/**/*.test.ts' && npm run count-lines",
+    "count-lines": "node scripts/count-lines.mjs"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250525.0",
+    "@types/node": "^22.0.0",
+    "miniflare": "^4.20260730.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "ulid": "^3.0.2"
+  }
+}
