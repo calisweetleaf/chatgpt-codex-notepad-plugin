@@ -1,8 +1,17 @@
 # AGENTS.md — Cognitive Workspace Plugin
 
+> **DAERON / MORPHEUS — OPERATOR NOTE (HOSTING, REPOSITORY PURPOSE, AND PRIORITY)**
+>
+> **THIS IS NOT TO BE LOCAL UNLESS NEEDED.** Not because I oppose local deployment, but because the intended primary route is ChatGPT Sites hosting the private MCP service so ChatGPT, Codex, and other authorized agents can reach the same persistent workspace. Treat Sites' free hosting/MCP availability as the desired deployment path **to verify**, not as a license to assume unverified hosting, pricing, persistence, or feature details. A local npm/npx component must remain installable when useful; **do not make local hosting or a locally running inference server a prerequisite for normal use**.
+>
+> **THIS GIT REPOSITORY IS A DEVELOPMENT WORKSPACE FOR CLOUD AGENTS, NOT A RUNTIME DEPENDENCY.** The application must run independently of Git, a `.git` directory, the GitHub repository, or repository publishing. **The repository is private and will not be published.** Private deployment of the plugin/MCP service is a different matter from publishing the repository.
+>
+> **TEST CODE SIZE LIMIT:** Across the project, total handwritten test-code lines **MUST NOT exceed 115% of the actual implemented application-code lines** (tests may be at most 15% larger than implementation). Exclude documentation, generated files, vendored dependencies, and formatting-only lines from the comparison; measure source and tests consistently. Maintain essential behavioral, integration, and regression coverage within this budget; do not inflate application code to evade the limit.
+
+
 > **Workspace operating contract for Factory, Codex, and any other implementation agent.**
 > 
-> **Project status:** greenfield. The initial repository contains proposal documents, not a settled implementation.
+> **Project status:** greenfield. The repository contains two proposals, a non-canonical `potential/` staging folder, and a `filetree.md` map; it does not yet contain a settled implementation.
 > **Primary user:** ChatGPT itself; Codex and other agents are secondary clients.
 > **First deliverable:** `SPEC.md`, produced only after reading both existing proposals.
 
@@ -159,7 +168,7 @@ Design requirements:
 - A deliberate **sync strategy** if the cloud and local instances need shared notes: define identity, conflict behavior, timestamps, authorization, offline writes, and recovery. Do not imply a hosted service and a local SQLite file synchronize magically.
 - Useful cache layers for recent session state, hot threads, derived summaries, and retrieval results, with predictable invalidation.
 
-**My position:** local-first storage and an API-compatible hosted endpoint is the most defensible engineering foundation; **ChatGPT usage and deployment priority are hosted-first**. These are different decisions and should not be conflated.
+**Current operator priority:** a **hosted, persistent, private MCP service is the default deployment** if viable through ChatGPT Sites. A compatible npm/npx local companion must exist, but local storage, a local daemon, and local inference are **opt-in or fallback capabilities**, not dependencies of the hosted workflow. Keep the data contract portable across deployments. These are separate decisions and should not be conflated.
 
 A small optional status UI is sufficient initially. Do not spend the first iteration building a polished consumer notebook interface.
 
@@ -255,3 +264,60 @@ The core paradox is intentional:
 > **Make the internal schema unusually rich, and make the act of using it almost invisible.**
 
 **Your first action is to read `docs/proposals/PROPOSAL.md` and `docs/proposals/PROPOSAL_2.md`. Your first output is a newly reasoned `SPEC.md`.**
+
+
+## 11. Current repository, non-canonical imports, and navigation (operator addendum — 2026-10-31)
+
+This section **adds to** the preceding contract. It does not replace the mission, and it takes precedence wherever an earlier suggestion conflicts with these updated operator requirements.
+
+### Repository snapshot
+
+The current reported workspace layout is:
+
+```text
+chatgpt-codex-notepad-plugin/
+├── docs/
+│   └── proposals/
+│       ├── PROPOSAL.md
+│       └── PROPOSAL_2.md
+├── potential/
+│   ├── knowledge_integration.py
+│   ├── knowledge_library.py
+│   ├── semantic_chunking_engine.py
+│   ├── semantic_db.py
+│   ├── semantic_search.py
+│   └── temporal_db.py
+├── filetree.md
+└── AGENTS.md
+```
+
+This is a **reported snapshot**, not permission to invent additional files or assume the contents of the six Python modules. Confirm the tree from the live workspace when available.
+
+### `potential/` is an evaluation quarantine, not implementation
+
+The `potential/` directory contains **candidate Adab-Nebulae modules**. Presence in this folder does **not** mean a module has been accepted, integrated, tested, or made canonical. **Zero, one, some, all, or none** may be used.
+
+1. **Inspect first.** Read and compare candidate implementations only when a concrete capability requires them; identify useful mechanisms, unwanted dependencies, and fit with the new plugin. Do not make six-module adoption a milestone.
+2. **Copy only what is chosen.** For any adopted functionality, copy/adapt the needed material into an owned location such as `src/<subsystem>/` (or the chosen package layout). **Never import runtime functionality directly from `potential/`.** Do not treat staging files as production modules.
+3. **Preserve the source candidates.** Do not automatically move, delete, rewrite, or promote files inside `potential/`. They are reference material used for comparison and selective transplantation.
+4. **Adapt inwards.** Any borrowed code must conform to *this plugin's* API, deployment model, data model, security boundaries, packaging, and tests. Do not force the new system to imitate the original Adab project.
+5. **Minimize external dependencies.** The candidate semantic/temporal machinery need not imply the Adab knowledge graph, USMS, or its surrounding integration architecture. Bring an old dependency only when **technically indispensable** to a chosen feature; explicitly justify it in `SPEC.md` and verify it. Prefer extracting a small independent mechanism.
+6. **Stay small in execution scope.** Schema expressiveness can be high, but implementation should arrive in narrow, testable slices. Don't turn six source candidates into a multi-day architectural transplant merely because they exist.
+
+### `filetree.md` is the maintained bird's-eye navigation map
+
+`filetree.md` is **required** as a continuously maintained, traversable overview of the *actual* repository. Agents must update it **in the same change** as creating, moving, renaming, or deleting project files/directories. Do not leave it describing yesterday's tree.
+
+Its job is to answer: **What exists, where is it, and where do I navigate next?** Prefer a compact hierarchical tree plus, where useful, very short purpose hints or relative Markdown links for major directories/files. Make it easy for Factory, Codex, and other agents to orient without repeatedly crawling the entire repo.
+
+It is **not** another `AGENTS.md`, `CONTEXT.md`, or `MEMORY.md`. Do not copy their full content into it, turn it into a running chat log, or embed huge implementation descriptions. Reference those documents by path if they exist. `AGENTS.md` defines agent working rules; other context/memory documents may hold their own content; `filetree.md` shows the navigable structure.
+
+Do not use `filetree.md` as proof that a file exists when the live tree contradicts it: correct the map promptly. The repository may be a Git workspace for development, but neither this map nor the deployed plugin may require Git at runtime.
+
+### Build and test budget reminder
+
+The repository is private development space; the product is the independently deployable MCP plugin/service. Prefer **hosted-first** operation and a shared endpoint for authorized agents. Keep local installation available without making local hosting mandatory.
+
+Enforce the **tests ≤ 1.15 × implementation** source-line limit at repository level, with a documented counting command or CI check. The ratio is a maximum, not a target. Use focused tests that demonstrate the real note-write/recall/resume experience, database integrity, cloud access, and selected component behavior rather than thousands of repetitive scaffolded cases.
+
+**Immediate next action remains unchanged:** read both `docs/proposals/` documents in full, then write `SPEC.md` using these operator requirements. Evaluate `potential/` selectively during specification/design; do not copy its files into `src/` merely to establish a scaffold. Add `SPEC.md` to `filetree.md` as soon as it is created.
