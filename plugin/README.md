@@ -1,26 +1,21 @@
 # Canonical ChatGPT plugin handoff
 
-The private Site has been published and Plugin Creator provisioned the canonical app. Do not create a duplicate plugin.
+The same private Site and canonical plugin are published. Preserve their identities and database; do not create a duplicate.
 
-| Identity | Value |
+| Identity | Current value |
 | --- | --- |
 | Site project | `appgprj_6ae661d0968081918d8c386d729f1c8c` |
 | Site URL | https://somnus-cognitive-workspace.daeronsomnus.chatgpt.site |
-| Canonical plugin App | `plugin_asdk_app_sites_09950ef599088191a5e6c9569f8c7dae` |
-| Plugin release | `pluginrel_6ae6bb003ae081919df592906c550291` (v1.1.0) |
+| Canonical plugin | `plugin_asdk_app_sites_09950ef599088191a5e6c9569f8c7dae` |
+| Plugin version | `1.2.0` |
+| Release | `pluginrel_6ae73322176c8191a94fe4b74cf26f54` |
 
-The Site's final source patch is published. Current deployment identifiers are in [`connection.json`](connection.json). The shared server source lives in `src/hosted/` and `src/mcp/`; `site/` owns the Sites route and build wrapper. Root and Site `.openai/hosting.json` must retain matching project and D1 binding identities. Refreshing the plugin uses its existing App ID; do not provision a duplicate.
+Current source, deployment, saved version and App entrypoint are in [connection.json](connection.json). Server source is shared under `src/`; `site/` provides the host routes. Root skills and WORKSPACE_CONTRACT are the authored package inputs, copied by `scripts/pack-plugin.mjs`. The plugin manifest, complete contract and both skill files were read back after update. Ordinary Chat behavior is independently described in tool descriptions and the self-contained instruction block; skill loading is not required.
 
-This directory contains the Plugin Creator manifests and local skill copies. The root `skills/` directory remains the authored skill source. Plugin Creator published v1.1.0; that release's manifest, contract, and usage/curator skills were read back. The current local contract and skill revisions were made after that readback and have not been published or read back yet. Preserve the existing App/MCP identity during refresh; do not create a second app. Refreshed Site deployment identifiers belong in [`connection.json`](connection.json) and should be updated by the root owner.
+v1.2.0 is published to the same private Site and canonical plugin. All 20 tests, typecheck, the handwritten line budget and hosted build pass. Canonical tools are open/write/recall/status/list/read/export/app; legacy calls remain compatible. Writes preserve up to4,000,000characters using lossless physical segmentation. Live status/list/export succeeded after deployment, including an880-record Markdown snapshot. Signed-in Android rendering remains unverified; this running chat retains cached old labels.
 
-**Verification still open:** the current ChatGPT registry exposes only the four earlier tools; the new list/read/export operations and cross-chat note recovery have not been exercised live. Root reports 20 tests, typecheck, and line-budget checks passed twice; newer App receipt/live-refresh/mobile-graph and bounded export-download changes await final tests/build. Root observed 47 notes/26 threads after the latest deployment, unchanged from before deployment; last write was `2026-11-01T03:50:34.459Z`. Root reports no note writes during deployment. This does not include per-note hash checks. Earlier service-credential probes returned HTTP 401 at dispatch and do not establish a server defect or exercise the handler. Cloud persistence and actual account cost remain unknown.
-
-Root reports 16 passing tests, typecheck, line-budget pass, and hosted build. A synthetic MCP browser fixture exercised timeline, inspector, threads, graph, and export UI. The local `/operator` preview returned 403 without owner identity. Neither result verifies signed-in production rendering in the native MCP App host; no production visual pass is claimed.
+The live database retained52entries/28threads and the same lastWrite across deployment. No test entries were added to production. The screenshot request failure was not reproduced; Worker error logs were empty for the queried window. A service-credential download probe lacks the owner identity and returned403; this does not replace owner-authenticated download acceptance. Native App/Android interaction still needs direct client acceptance.
 
 ## Source mirror workflow
 
 The published Site has a separate source mirror/history from this GitHub repository. Future agents must start from the canonical GitHub `main`, use the supported Site source helper in a separate scratch checkout, and overlay the canonical Git archive while preserving `mirror.git`. Build/package/push from that helper checkout. Do not merge the two histories or force-push one over the other. Keep both hosting manifests identical and refresh the existing plugin identity after publishing; never create another plugin app for an update.
-
-## Full continuity correction — 2026-11-01
-
-Full conversational continuity release: canonical open/write/recall/status/list/read/export/app, backward-compatible calls, lossless long-entry storage, full Markdown export, inline write/export receipts and live inspector. All 20 tests, typecheck, line budget and hosted build pass. Latest published identifiers are in plugin/connection.json. Android/native host rendering remains a separate acceptance boundary. The former four-tool registry limitation is historical; all eight original operations were successfully available before this correction. The previous export snapshot was created live. Current ChatGPT-host rendering still needs direct client acceptance.

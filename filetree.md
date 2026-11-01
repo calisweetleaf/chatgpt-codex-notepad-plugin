@@ -81,7 +81,7 @@ Enter at [AGENTS.md](AGENTS.md) §12 → [CONTEXT.md](CONTEXT.md) → the surfac
 │   └── README.md                 Site identity, route/build and source-mirror handoff
 ├── plugin
 │   ├── README.md                 published Site/plugin identities and mirror update workflow
-│   ├── plugin.json                local package manifest and published release v1.1.0
+│   ├── plugin.json                local package manifest and published release v1.2.0
 │   ├── .app.json                  canonical App connection binding
 │   ├── .codex-plugin/plugin.json  Codex plugin manifest
 │   ├── connection.json            non-secret Site/plugin IDs, URLs, version, source
@@ -111,7 +111,7 @@ Enter at [AGENTS.md](AGENTS.md) §12 → [CONTEXT.md](CONTEXT.md) → the surfac
 
 ## Remaining implementation and deployment surfaces
 
-The baseline core, stores, eight operations, local stdio harness, hosted entry, and Sites bridge are present. The source now advertises `open/write/recall/status/list/read/export/app` with `workspace_*` aliases; writing accepts up to 4,000,000 characters and uses chunk storage/read hydration. Root reports 20 tests, typecheck, and line-budget checks passing twice; subsequent App receipt/live-refresh/mobile-graph and bounded export-download changes await final tests/build. Site and plugin v1.1.0 are published; identifiers are in `plugin/connection.json`, but its readback predates the current local contract/skill edits. The current ChatGPT registry still exposes four earlier operations. Full conversational turns and complete export are required. Synthetic UI fixture checks do not establish production/native Chat or mobile rendering. `WORKSPACE_CONTRACT.md` and self-contained `docs/CUSTOM_INSTRUCTIONS.md` define the workflow; neither repository nor skill files are auto-loaded by ChatGPT.
+v1.2.0 is published to the same private Site and canonical plugin. All 20 tests, typecheck, the handwritten line budget and hosted build pass. Canonical tools are open/write/recall/status/list/read/export/app; legacy calls remain compatible. Writes preserve up to4,000,000characters using lossless physical segmentation. Live status/list/export succeeded after deployment, including an880-record Markdown snapshot. Signed-in Android rendering remains unverified; this running chat retains cached old labels.
 
 ## Deployment handoff surfaces
 
@@ -132,3 +132,7 @@ src/worker/  optional jobs (minor only)
 ## Full continuity correction — 2026-11-01
 
 Full conversational continuity release: canonical open/write/recall/status/list/read/export/app, backward-compatible calls, lossless long-entry storage, full Markdown export, inline write/export receipts and live inspector. All 20 tests, typecheck, line budget and hosted build pass. Latest published identifiers are in plugin/connection.json. Android/native host rendering remains a separate acceptance boundary. The former four-tool registry limitation is historical; all eight original operations were successfully available before this correction. The previous export snapshot was created live. Current ChatGPT-host rendering still needs direct client acceptance.
+
+### Publication outcome
+
+v1.2.0 is published to the existing private Site and canonical plugin. All 20 tests, typecheck, line budget and hosted build pass. Live status remains52notes/28threads after deployment; newest-first list and v3 full export succeeded (880records). Plugin manifest, complete contract and both skills were read back. This running chat retains cached old tool labels; server discovery advertises the canonical names, and the old calls remain compatible. Native Android rendering and the screenshot request failure are not established by these backend checks. Current deployment, release, source and App entrypoint are in `plugin/connection.json` (relative to repository root).

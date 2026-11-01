@@ -152,3 +152,7 @@ P0 and P1 build **one codebase**. P1 is not a separate prototype; it is the same
 - `NOTEPAD.md` is append-only; correct an entry with a dated correction, never a rewrite.
 - No integration is "working" until a real client exercised it.
 - The workspace stores thinking in progress. It does not verify, score, or correct the operator's notes.
+
+### Publication outcome
+
+v1.2.0 is published to the existing private Site and canonical plugin. All 20 tests, typecheck, line budget and hosted build pass. Live status remains52notes/28threads after deployment; newest-first list and v3 full export succeeded (880records). Plugin manifest, complete contract and both skills were read back. This running chat retains cached old tool labels; server discovery advertises the canonical names, and the old calls remain compatible. Native Android rendering and the screenshot request failure are not established by these backend checks. Current deployment, release, source and App entrypoint are in `plugin/connection.json` (relative to repository root).
