@@ -21,6 +21,9 @@ export class D1Store implements Database {
     if (!this.active) throw new Error('D1 queries require a transaction');
     return (await this.active.session.prepare(sql).bind(...values).all<T>()).results;
   }
+  async immutableRead<T extends Row = Row>(sql: string, ...values: Value[]): Promise<T[]> {
+    return (await this.binding.withSession('first-primary').prepare(sql).bind(...values).all<T>()).results;
+  }
   async run(sql: string, ...values: Value[]): Promise<void> {
     if (!this.active) throw new Error('D1 writes require a transaction');
     this.active.writes.push(this.active.session.prepare(sql).bind(...values));

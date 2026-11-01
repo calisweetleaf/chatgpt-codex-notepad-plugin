@@ -11,6 +11,7 @@ function setup() {
   const db = new SQLiteDatabase();
   db.migrate(schema);
   db.migrate(readFileSync(new URL('../src/store/migrations/0003.sql', import.meta.url), 'utf8'));
+  db.migrate(readFileSync(new URL('../src/store/migrations/0004.sql', import.meta.url), 'utf8'));
   let sequence = 0;
   const runtime = {
     id: (prefix: string) => `${prefix}_${String(++sequence).padStart(6, '0')}`,
@@ -135,8 +136,8 @@ test('MCP discovery, tool listing, and tool calls expose the workspace contract'
   const discover = await request('server/discover');
   assert.ok(discover.result.capabilities.tools);
   const listing = await request('tools/list');
-  for (const name of ['workspace_open', 'workspace_note', 'workspace_recall', 'workspace_status']) assert.ok(listing.result.tools.some((tool: { name: string }) => tool.name === name));
-  const app = listing.result.tools.find((tool: { name: string }) => tool.name === 'workspace_app');
+  for (const name of ['open', 'write', 'recall', 'status', 'export']) assert.ok(listing.result.tools.some((tool: { name: string }) => tool.name === name));
+  const app = listing.result.tools.find((tool: { name: string }) => tool.name === 'app');
   const uri = app._meta.ui.resourceUri;
   assert.match(uri, /^ui:\/\//);
   assert.deepEqual(app._meta['openai/ui'].entrypoints.map((entry: { type: string }) => entry.type), ['global', 'thread']);

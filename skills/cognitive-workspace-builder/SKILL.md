@@ -23,6 +23,7 @@ The two files in `docs/proposals/` are historical inputs. Do not implement them 
 - **Hosted first.** The default deployment is a private MCP server hosted on a ChatGPT Site. The npm local companion is opt-in. Nothing in the hosted path may require a local process.
 - **No runtime Git dependency.** The service must run from a build artifact with no `.git` present.
 - **`major` is append-only.** Only operator redaction changes note text. Curation writes only `minor`.
+- **Preserve the full conversation.** Store its relevant turns, branches, returns, corrections, symbolism, and unfinished connections. Do not add one-sentence, short-note, or summary-only requirements.
 - **No cross-store foreign keys or queries** between `major_*` and `minor_*` tables (SPEC §5).
 - **`potential/` is read-only reference.** Never import from it, never edit it. Re-implement chosen mechanisms in `src/`.
 - **No Adab, USMS, knowledge-graph, or vector-DB dependency** for writing and recalling notes.
@@ -57,14 +58,14 @@ Facts from OpenAI docs as of 2026-10-31 (see SPEC §3 for sources):
 - Pro and personal plans cannot share a Site-hosted plugin with other users.
 - Hosting cost: the docs say running/hosting usage is billed separately and waived for Enterprise. The operator expects free hosting. Confirm on the real account and record the result in SPEC §3.
 
-**Current deployment state (2026-10-31):** Site `appgprj_6ae661d0968081918d8c386d729f1c8c` and canonical plugin `plugin_asdk_app_sites_09950ef599088191a5e6c9569f8c7dae` are published/provisioned; deployment and release details are in `plugin/README.md`. Keep `src/hosted/` as server source. `site/app/mcp/route.ts` bridges to the hosted handler; `scripts/build-hosted.mjs` checks hosting identity manifests. A service-credential schema probe returned HTTP 401 at dispatch, and the current chat registry lacked workspace tools after retry; do not claim live MCP handling or cross-chat recovery. Source updates use the separate Sites mirror helper procedure in `plugin/README.md`: start from GitHub `main`, preserve `mirror.git`, overlay the canonical Git archive, and never merge or force-push the separate histories. Refresh the existing plugin identity; do not create a duplicate.
+**Current deployment state (2026-11-01):** the final Site source patch and canonical plugin v1.1.0 are published. That release's manifest, contract, and usage/curator skill contents were read back before the current full-continuity documentation revisions. Current deployment and release identifiers are in `plugin/connection.json`. The source now advertises `open/write/recall/status/list/read/export/app`, accepts `workspace_*` compatibility aliases, and supports text writes up to 4,000,000 characters with chunked storage and reconstruction. Root reports 19 tests, typecheck, and line-budget checks passing twice after fixing chunk-boundary recall and row typing. Further App receipt/live-refresh/mobile-graph and bounded export-download changes are now in source and their final test/build pass is pending. The current ChatGPT tool registry still exposes only the four earlier operations. Synthetic browser-fixture interaction is not production/native-host rendering evidence. Keep `src/hosted/` as server source. `site/app/mcp/route.ts` bridges to the hosted handler; `scripts/build-hosted.mjs` checks hosting identity manifests. Source updates use the separate Sites mirror helper procedure in `plugin/README.md`: start from GitHub `main`, preserve `mirror.git`, overlay the canonical Git archive, and never merge or force-push the separate histories. Refresh the existing plugin identity; do not create a duplicate.
 
 Steps for ChatGPT Work mode or Codex:
 
 1. Open or create a private Site. Ask to add an MCP server backed by D1.
 2. Build the planned hosted vertical slice directly from `src/core`, `src/store`, and `src/mcp`; do not create a throwaway `ping` + `echo_write` spike. Record Sites runtime, transport, binding, identity, scheduling, outbound-HTTP, storage, and cost findings in `TASK.md` as they are observed.
 3. Publish as the Site owner. Install the plugin card. Complete the connection flow.
-4. Mention the plugin in a chat and call `workspace_status`, then `workspace_note`, then `workspace_recall` in a **new** chat.
+4. Mention the plugin in a chat and use `status`, `write`, `recall`, and `open` as exposed, then test full conversation continuity from a **new** chat. Older `workspace_*` aliases may appear during client refresh.
 5. Repeat from Codex against the same plugin.
 6. Write results into SPEC §3 and TASK.md.
 
@@ -82,11 +83,13 @@ Before publishing, make sure writes are not anonymous (owner allowlist at minimu
 
 When implementing or changing a tool:
 
-- Only `text` is required on `workspace_note`. Every other field stays optional.
-- Every write returns a one-line receipt naming note id, thread, and session.
-- Recall output wraps note text in a block marked "stored working material, not instructions".
-- Descriptions stay short and concrete; a model reads them on every call.
+- The ordinary `write` operation should accept rich free-form conversation material without forcing metadata fields or a short-note policy. Names such as `workspace_note` may remain as aliases.
+- Do not silently truncate large turns or multi-megabyte writing; size limits must match the actual transport and storage and be surfaced clearly.
+- Writes return a receipt or another clear result that tells the caller how the operation completed.
+- `recall` should restore conversational turns and their surrounding context, not only short summaries.
+- Descriptions make the simple action names and full-conversation behavior clear to the model.
 - Update `skills/cognitive-workspace-usage` and `skills/cognitive-workspace-curator` in the same commit.
+- The visible `app` operation should provide the full workspace inspection and export surface in ChatGPT, including supported mobile clients; do not mark native Chat or mobile rendering complete without client evidence.
 
 ## Testing
 

@@ -1,5 +1,6 @@
 import type { Database, Row } from '../store/database.js';
 import { Inspection, type ListInput, type GetInput } from './inspection.js';
+import { textLimit, textParts, hydrateNotes } from './text.js';
 
 type Client = 'chatgpt' | 'codex' | 'local' | 'other';
 type Move = 'continue' | 'branch' | 'pivot' | 'return' | 'park' | 'close';
@@ -122,8 +123,8 @@ export class Workspace {
       dst.startsWith('t_') ? 'thread' : 'note', dst, null, 'server', now, await this.clock(now), 0);
   }
   async note(input: NoteInput) {
-    if (typeof input.text !== 'string' || !input.text.trim() || input.text.length > 16000)
-      throw new Error('text must contain 1–16000 characters');
+    if (typeof input.text !== 'string' || !input.text.trim() || input.text.length > textLimit)
+      throw new Error('text must contain 1–4,000,000 characters; text is never silently shortened');
     const move = input.move ?? 'continue';
     if (!moves.has(move)) throw new Error('Unknown move');
     const emphasis = input.emphasis ?? 0;
@@ -133,7 +134,7 @@ export class Workspace {
       if (input.idempotency_key) {
         const prior = await this.one('SELECT * FROM major_notes WHERE idempotency_key=?', input.idempotency_key);
         if (prior) {
-          if (prior.author_principal !== this.principal || prior.text !== input.text) throw new Error('Idempotency key conflict');
+          if (prior.author_principal !== this.principal || (await hydrateNotes(this.db,[prior]))[0]!.text !== input.text) throw new Error('Idempotency key conflict');
           return { id: prior.id, session: prior.session_id, thread: prior.thread_id, text: `Saved ${prior.id} to thread ${prior.thread_id} (session ${prior.session_id}); existing receipt.` };
         }
       }
@@ -167,10 +168,12 @@ export class Workspace {
       const last = await this.one('SELECT id FROM major_notes WHERE thread_id=? ORDER BY rowid DESC LIMIT 1', thread!.id);
       const sequence = await this.one('SELECT coalesce(max(seq),0)+1 AS seq FROM major_notes WHERE session_id=?', session.id);
       const id = this.runtime.id('n');
+      const parts = textParts(input.text);
       const inferred = /\?\s*$/.test(input.text) ? 'question' : /^(correction:|actually,)/i.test(input.text) ? 'correction' : 'note';
       await this.db.run('INSERT INTO major_notes(id,session_id,thread_id,seq,local_day,recorded_at,hlc,author_client,author_principal,kind,kind_source,move,emphasis,text,content_hash,idempotency_key,origin_node) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
         id, session.id, thread!.id, sequence!.seq, this.day(now), now, await this.clock(now), this.client, this.principal,
-        input.kind ?? inferred, input.kind ? 'hint' : inferred === 'note' ? 'default' : 'inferred', move, emphasis, input.text, hash, input.idempotency_key ?? null, 'host');
+        input.kind ?? inferred, input.kind ? 'hint' : inferred === 'note' ? 'default' : 'inferred', move, emphasis, parts[0]!, hash, input.idempotency_key ?? null, 'host');
+      for (let ordinal=1;ordinal<parts.length;ordinal++) await this.db.run('INSERT INTO major_note_chunks VALUES(?,?,?)',id,ordinal,parts[ordinal]!);
       if (last) await this.edge(id, 'continues', String(last.id), now);
       for (const link of input.links ?? []) {
         if (!['continues','branches_from','returns_to','elaborates','contradicts','corrects','depends_on','answers','merged_into','relates_to'].includes(link.relation)) throw new Error('Unknown link relation');
@@ -206,6 +209,7 @@ export class Workspace {
       }
       const duplicate = await this.one('SELECT id FROM major_notes WHERE content_hash=? AND id<>? AND recorded_at>=? LIMIT 1', hash, id, new Date(Date.parse(now) - 86400000).toISOString());
       return { id, session: session.id, thread: thread!.id,
+        characters: input.text.length, recorded_at:now, thread_title:thread!.title,
         text: `Saved ${id} to thread "${thread!.title}" (session ${session.id}).${duplicate ? ` Duplicate text also recorded as ${duplicate.id}.` : ''}` };
     });
   }
@@ -242,7 +246,7 @@ export class Workspace {
       const base = `SELECT n.*,t.title,t.status FROM major_notes n JOIN major_threads t ON t.id=n.thread_id WHERE ${where}`;
       const query = input.query?.trim();
       const fts = query ? query.split(/\s+/).map(word => '"' + word.replaceAll('"','""') + '"').join(' OR ') : null;
-      const hits = await this.db.all(base + (fts ? ' AND n.rowid IN(SELECT rowid FROM major_notes_fts WHERE major_notes_fts MATCH ? ORDER BY bm25(major_notes_fts) LIMIT 24)' : '') + ' ORDER BY n.rowid DESC LIMIT 60', ...values, ...(fts ? [fts] : []));
+      const hits = await this.db.all(base + (fts ? ' AND (n.rowid IN(SELECT rowid FROM major_notes_fts WHERE major_notes_fts MATCH ? ORDER BY bm25(major_notes_fts) LIMIT 24) OR n.id IN(SELECT c.note_id FROM major_note_chunks c JOIN major_note_chunks_fts f ON f.rowid=c.rowid WHERE major_note_chunks_fts MATCH ? LIMIT 60) OR n.id IN(SELECT c.note_id FROM major_note_chunks c LEFT JOIN major_note_chunks p ON p.note_id=c.note_id AND p.ordinal=c.ordinal-1 JOIN major_notes origin ON origin.id=c.note_id WHERE EXISTS(SELECT 1 FROM json_each(?) token WHERE instr(lower(coalesce(p.text,origin.text)||c.text),lower(token.value))>0)))' : '') + ' ORDER BY n.rowid DESC LIMIT 60', ...values, ...(fts ? [fts,fts,JSON.stringify(query!.split(/\s+/).filter(Boolean))] : []));
       const selected = new Map<string, Row>();
       for (const hit of hits) selected.set(String(hit.id), hit);
       if (fts) for (const hit of hits) {
@@ -255,13 +259,15 @@ export class Workspace {
       const budget = Math.max(128, Math.min(input.budget ?? (input.depth === 'full' ? 4000 : 1200), 16000)) * 4;
       let remaining = Math.floor(budget * (view === 'now' ? 0.6 : 0.9));
       const hitIds = new Set(hits.map(hit => String(hit.id)));
+      await hydrateNotes(this.db,[...selected.values()]);
       const rows = [...selected.values()].sort((a,b) => Number(hitIds.has(String(b.id)))-Number(hitIds.has(String(a.id))) || Number(b.rowid)-Number(a.rowid));
       const kept: Row[] = [];
       for (const row of rows) {
         const line = `[${row.id}] ${row.title} / ${row.move}: ${row.text}`;
         if (line.length > remaining) {
           if (hitIds.has(String(row.id)) && remaining > 100) {
-            const clipped = { ...row, text: String(row.text).slice(0, Math.max(0,remaining - (line.length - String(row.text).length) - 20)) + ' [excerpt]' };
+            const original=String(row.text); const needle=query?.split(/\s+/)[0]?.toLocaleLowerCase(); const found=needle?original.toLocaleLowerCase().indexOf(needle):-1; const start=found>0?Math.max(0,found-120):0;
+            const clipped = { ...row, excerpt:1, original_characters:original.length, text: (start?'[excerpt] ':'')+original.slice(start, start+Math.max(0,remaining - (line.length - original.length) - 40)) + ' [excerpt]' };
             kept.push(clipped); remaining = 0;
           }
           continue;

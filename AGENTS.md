@@ -14,7 +14,7 @@
 
 > **Workspace operating contract for Factory, Codex, and any other implementation agent.**
 >
-> **Project status:** the final Sites source patch and canonical private plugin v1.1.0 are published. P3 inspection/export, excerpts, eight-tool MCP schema, and inspector App are in source. Root reports 16 tests, typecheck, line budget, and hosted build passing. Plugin manifest, contract, and both skill contents were read back. The current chat registry still exposes only the four earlier tools, so live upgraded calls/export and cross-chat recovery remain unverified. A synthetic MCP browser fixture exercised timeline, inspector, threads, graph, and export UI; production/native App rendering is not verified. The local `/operator` preview returned 403 without owner identity. See §12, `CONTEXT.md`, and `TASK.md` P3.
+> **Project status:** Full conversational continuity release: canonical open/write/recall/status/list/read/export/app, backward-compatible calls, lossless long-entry storage, full Markdown export, inline write/export receipts and live inspector. All 20 tests, typecheck, line budget and hosted build pass. Latest published identifiers are in plugin/connection.json. Android/native host rendering remains a separate acceptance boundary.
 > **Primary user:** ChatGPT itself; Codex and other agents are secondary clients.
 > **First deliverable:** `SPEC.md`, produced only after reading both existing proposals. *(Delivered: [`docs/SPEC.md`](docs/SPEC.md). Next work is tracked in [`TASK.md`](TASK.md).)*
 
@@ -37,7 +37,7 @@ The goal is simple, even if its internals are not:
 
 **Give ChatGPT an external working space where it can put down the evolving flow of a research conversation, return to it, and continue without reconstructing everything after context compression or a new chat.**
 
-This is a **model-facing cognitive convenience**, not a user productivity notebook. ChatGPT should be able to use it easily and naturally while talking to the operator. An ordinary note write should be as easy as a short thought or a paragraph. A retrieval should return enough surrounding context to resume the thread rather than an isolated fact.
+This is a **model-facing cognitive convenience**, not a user productivity notebook. ChatGPT should be able to use it easily and naturally while talking to the operator. Writing should be as easy as expressing the thought, while allowing the full length the conversation needs. Retrieval should return the evolving exchange—its turns, context, branches, returns, corrections, and unfinished connections—not an isolated conclusion.
 
 It occupies a deliberate space **between the operator's words, the code, the documentation, the fables and symbols used to explain designs, and the active conversation**. These modes of knowing are allowed to coexist. This plugin is not an adjudicator deciding which one is true.
 
@@ -79,19 +79,20 @@ Priorities, in order:
 6. The same logical workspace is usable via a hosted native plugin and an installable local component.
 7. Additional semantic/temporal intelligence improves retrieval over time without becoming a prerequisite for core operation.
 
-**A good MCP tool call is small to author and rich to consume.** Prefer one free-form `text` field plus optional hints to a large rigid form. Return compact context by default with clear options for deeper retrieval.
+**A good MCP tool call is easy to invoke and rich to consume.** Prefer simple names and a free-form writing field with optional hints to a large rigid form. The writing field must support substantial conversation, not just a blurb. Orientation may help navigate, but retrieval and export must keep the full underlying trail available. The same visible App should be usable from ChatGPT Chat and mobile clients.
 
 ### Candidate interface, to refine in `SPEC.md`
 
 A minimal model-facing surface might include:
 
-- `workspace_open` — start/resume an active project, chat, day, or research thread and receive its current state.
-- `workspace_note` — write a free-form note with optional scope, emphasis, and relations; most routine writes should use this.
-- `workspace_recall` — fetch surrounding continuity from a phrase, thread, period, component, or conversational turn.
-- `workspace_state` — compact orientation: where we are, how we got here, unresolved strands, and what to resume.
+- `open` — start/resume an active project, chat, day, or research thread and receive its current state (`workspace_open` compatibility alias).
+- `write` — preserve conversational material with optional scope, movement, and relations (`workspace_note` compatibility alias).
+- `recall` — return the relevant trail from a phrase, thread, period, component, or conversational turn (`workspace_recall` compatibility alias).
+- `state` — orientation: where we are, how we got here, unresolved strands, and what to resume (`workspace_state` compatibility alias where exposed).
 - `workspace_link` — connect notes/threads across chats or days without copying everything.
 - `workspace_consolidate` — gather or transform accumulated material into thematic/temporal collections, especially the secondary store.
-- `workspace_status` — inspect service health, storage, local/cloud availability, and pending synchronization.
+- `status` — inspect service health, storage, local/cloud availability, and pending synchronization (`workspace_status` compatibility alias).
+- `list`, `read`, `export`, and `app` — browse records, retrieve full records, export the complete archive, and open the visible ChatGPT workspace App; compatibility `workspace_*` names may remain available.
 
 These names are **my suggested starting interface**, not an instruction to proliferate tools. You may combine operations if doing so makes them more natural and reliable. The implementation must remain comprehensible to an LLM consuming its tool descriptions.
 
@@ -120,7 +121,7 @@ The schema must represent conversational structure, not just records with titles
 - Retrieval views for **now**, **earlier today**, **this chat**, **this project**, **this thread**, **the related detour**, and **what changed since our last discussion**.
 - Derived clusters, themed collections, categorical grouping, and later model-generated consolidation.
 
-**Do not confuse schema sophistication with tool-call verbosity.** Model-facing writes should let the service derive reasonable structure from a short free-form note, current workspace selection, and optional hints.
+**Do not confuse schema sophistication with tool-call verbosity.** Model-facing writes should accept full free-form conversational material with optional context hints, without requiring elaborate metadata or limiting the writing to a short note.
 
 ### Asserted dual-store hypothesis: `major.db` and `minor.db`
 
@@ -197,16 +198,16 @@ The workspace should not make talking to ChatGPT feel like filling in database r
 
 The desired cycle:
 
-1. The conversation begins or resumes. ChatGPT gets a short, useful continuity state.
+1. The conversation begins or resumes. ChatGPT gets an orientation and can reopen the complete conversation trail.
 2. The operator pastes code, thinks out loud, changes topic, or explores alternatives.
-3. ChatGPT reasons normally and **occasionally writes concise notes** when a meaningful development occurs.
-4. The operator and assistant may circle back hours or days later; ChatGPT can retrieve the **path of the discussion**, not just isolated bullet-point facts.
+3. ChatGPT reasons normally and writes relevant turns and developments into the workspace so the conversation's full path survives.
+4. The operator and assistant may circle back hours or days later; ChatGPT can retrieve the **path of the discussion**, including its back-and-forth, not just conclusions or isolated facts.
 5. Periodically, Codex or a dedicated process groups accumulated material into `minor.db` while leaving the raw trajectory available in `major.db`.
 6. Later adaptation/reorganization features can be added without making early versions depend on a background intelligence daemon.
 
 The plugin must not claim invisible access to all chat messages. Tool calls are made only when supported and invoked by the host. Session ID acquisition may be limited; use explicit or generated workspace/session identities instead of fabricating native ChatGPT conversation identifiers.
 
-**Measure usability:** few calls, small arguments, meaningful retrieval, correct continuity, and negligible conversational overhead. An elaborate database nobody naturally uses is a failed implementation.
+**Measure usability:** easy calls, simple tool names, substantial writing without arbitrary compression, full conversational retrieval, and negligible overhead. An elaborate database nobody naturally uses is a failed implementation.
 
 ## 8. Implementation principles and agent discipline
 
@@ -246,7 +247,7 @@ At minimum, `SPEC.md` must address:
 - **Fresh chat, no re-explanation:** ChatGPT opens a new conversation and recalls the active research thread, key detours, and next unresolved question.
 - **Several concurrent threads:** The system can distinguish a conversation about Kwisatz's philosophy from one about current Varys source code without losing their relationship.
 - **Daily flow:** Notes from the same day cluster naturally while yesterday's unfinished thread can resume today.
-- **Short write, rich recall:** A free-form note is stored with one straightforward tool call; subsequent recall returns an informative compact working context.
+- **Full conversation, rich recall:** Relevant user and assistant turns, branches, returns, corrections, symbolism, and open connections are retained without a short-note rule; later calls recover the surrounding conversation and full originals.
 - **Cross-system evolution:** New versions of a module can be discussed without destroying the notes about prior versions.
 - **Secondary consolidation:** Codex organizes and groups primary notes into the derived store without mutating the originals.
 - **Offline local operation:** The local server continues to accept and retrieve notes without cloud connectivity; later synchronization has a defined resolution protocol.
@@ -346,7 +347,7 @@ Each surface has one job. Read the one the task points at; do not read everythin
 | [`docs/SPEC.md`](docs/SPEC.md) | The design and its reasoning. | Implementing or questioning a design decision. |
 | [`NOTEPAD.md`](NOTEPAD.md) | Live, append-only working state while you work. | Starting work, hitting evidence that changes your model, failing informatively, handing off. |
 | [`CONTEXT.md`](CONTEXT.md) | Compact current keys: gate, hazards, deferred queue, open questions. | Re-entry; one read to orient. |
-| [`MEMORY.md`](MEMORY.md) | Durable findings with provenance: verified facts, rejected designs, doctrine, rationale. | Something looks surprising, or you are about to re-derive a decision. |
+| [`MEMORY.md`](MEMORY.md) | Durable project findings, rejected designs, doctrine, and rationale. | Something looks surprising, or you are about to re-derive a decision. |
 | [`WORKSPACE_CONTRACT.md`](WORKSPACE_CONTRACT.md) | Material types, fidelity boundaries, and the open → recall → inspect → note → revisit workflow. | Changing agent behavior, note fidelity, inspection, or export expectations. |
 | [`docs/CUSTOM_INSTRUCTIONS.md`](docs/CUSTOM_INSTRUCTIONS.md) | Compact text the operator can apply in ChatGPT settings; not auto-loaded from this repository. | Installing the conversational workflow in ChatGPT. |
 | P3 full-visibility upgrade | Root owns inventory/full-record/export backend, MCP schemas, App UI, and deployment; docs lane maintains the contract and usage/curator guidance. | See [TASK.md](TASK.md) P3 and the connected server's tool registry. |
@@ -386,7 +387,7 @@ Hierarchy per `NOTEPAD.md`: `AGENTS.md` → `NOTEPAD.md` → `CONTEXT.md` → `M
 - **Hosted first on ChatGPT Sites** (MCP server + D1 storage), with an opt-in npm local companion (`cwp`). The hosted service is request-driven; no hosted daemon is required.
 - **One TypeScript codebase** for hosted and local. `potential/` Python modules are mined for mechanisms only (SPEC §9.1).
 - **`major` / `minor`:** two logical stores with a hard boundary; two physical databases where the platform allows, prefixed tables where it does not. No cross-store foreign keys or queries either way.
-- **Six tools:** `workspace_open`, `workspace_note`, `workspace_recall`, `workspace_link`, `workspace_curate`, `workspace_status`. `workspace_state` and `workspace_consolidate` from §3 were folded into `open`/`recall` and `curate`.
+- **Current tools:** `open`, `write`, `recall`, `status`, `list`, `read`, `export`, and `app` are the intended simple public names; existing `workspace_*` names remain compatibility aliases during rollout. The original SPEC's six-tool list is historical; `link` and `curate` are future operations, not part of the current eight.
 - **Best-guess session filing** with visible receipts and one-call refile; strict binding is a config option.
 - **No anonymous writes** on the hosted endpoint.
 

@@ -8,6 +8,7 @@ export type Value = string | number | null;
  */
 export interface Database {
   all<T extends Row = Row>(sql: string, ...values: Value[]): Promise<T[]>;
+  immutableRead?<T extends Row = Row>(sql: string, ...values: Value[]): Promise<T[]>;
   run(sql: string, ...values: Value[]): Promise<void>;
   transaction<T>(work: (database: Database) => Promise<T>): Promise<T>;
 }

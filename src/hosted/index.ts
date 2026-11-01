@@ -23,7 +23,7 @@ async function boundedBody(request: Request): Promise<string> {
       const { done, value } = await reader.read();
       if (done) break;
       size += value.byteLength;
-      if (size > 128000) { await reader.cancel(); throw new RangeError('Request exceeds 128000 bytes'); }
+      if (size > 32 * 1024 * 1024) { await reader.cancel(); throw new RangeError('Request exceeds 32 MiB; split the supplied material across linked entries'); }
       chunks.push(value);
     }
   } finally { reader.releaseLock(); }

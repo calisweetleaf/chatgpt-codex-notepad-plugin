@@ -7,7 +7,7 @@ import { Workspace, type Runtime } from '../src/core/workspace.js';
 
 function setup() {
   const db = new SQLiteDatabase();
-  for (const name of ['0001.sql', '0002.sql', '0003.sql']) db.migrate(readFileSync(new URL(`../src/store/migrations/${name}`, import.meta.url), 'utf8'));
+  for (const name of ['0001.sql', '0002.sql', '0003.sql', '0004.sql']) db.migrate(readFileSync(new URL(`../src/store/migrations/${name}`, import.meta.url), 'utf8'));
   let i = 0;
   const runtime: Runtime = { id: prefix => `${prefix}_${++i}`, now: () => '2026-11-01T12:00:00.000Z', hash: async text => createHash('sha256').update(text).digest('hex') };
   return { db, owner: new Workspace(db, runtime, 'owner', 'chatgpt', 'UTC'), other: new Workspace(db, runtime, 'other', 'chatgpt', 'UTC') };
@@ -88,4 +88,46 @@ test('large multi-page exports retain every byte and never rewrite source notes'
   assert.equal(digest(after), digest(before));
   for (const text of expected) assert.ok(output.includes(text));
   assert.match(output, new RegExp(`END: ${exported.manifest.total_records} records; complete snapshot`));
+});
+
+test('long research notes retain exact multiline Unicode and boundary whitespace', async t => {
+  const { db, owner } = setup(); t.after(() => db.close());
+  const text = `  \n\t${'a'.repeat(23995)}🌌${'🌌 notes, paths, and ideas\n'.repeat(2200)}tailuniquemarker\n \t `;
+  const receipt = await owner.note({ text });
+  assert.equal((await owner.get({ id: receipt.id as string })).record.text, text);
+  assert.equal((await owner.list({ limit: 1 })).records[0].text, text);
+  assert.ok((await owner.recall({ query: 'tailuniquemarker' })).notes.some(row => row.id === receipt.id));
+  const exported = await owner.export();
+  assert.equal(exported.manifest.counts.major_notes, 1);
+  assert.ok((await (await owner.download(exported.id)).text()).includes(text));
+});
+
+test('search finds a word that crosses a long-note chunk boundary', async t => {
+  const { db, owner } = setup(); t.after(() => db.close());
+  const text = `${'a'.repeat(23989)} crossboundaryword ends here`;
+  const receipt = await owner.note({ text });
+  assert.ok((await owner.recall({ query: 'crossboundaryword' })).notes.some(row => row.id === receipt.id));
+});
+
+test('export handles large notes containing many separate backtick runs', async t => {
+  const { db, owner } = setup(); t.after(() => db.close());
+  const text = '`\n'.repeat(150000);
+  await owner.note({ text });
+  const artifact = await owner.export();
+  const output = await (await owner.download(artifact.id)).text();
+  assert.ok(output.includes(text));
+});
+
+test('newest-first pages retain their ceiling and respect time filters', async t => {
+  const { db, owner } = setup(); t.after(() => db.close());
+  const first=await owner.note({text:'First complete discussion'});
+  const second=await owner.note({text:'Second complete discussion',session:first.session as string});
+  const page=await owner.list({order:'desc',limit:1,since:'2026-11-01T00:00:00Z'});
+  assert.equal(page.records[0].id,second.id);
+  await owner.note({text:'Later arrival',session:first.session as string});
+  const next=await owner.list({order:'desc',limit:1,since:'2026-11-01T00:00:00Z',cursor:page.next_cursor!});
+  assert.equal(next.records[0].id,first.id);
+  assert.equal(next.next_cursor,null);
+  assert.equal((await owner.list({until:'2026-10-31T00:00:00Z'})).records.length,0);
+  await assert.rejects(owner.list({order:'asc',cursor:page.next_cursor!}),/scope/);
 });

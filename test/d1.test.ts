@@ -25,7 +25,7 @@ test('D1 executes workspace operations and guarded atomic transactions', async (
   assert.equal((await hosted.fetch(request('{}', { 'content-type': 'application/json', 'oai-authenticated-user-id': 'intruder' }), environment)).status, 403);
   assert.equal((await hosted.fetch(new Request('https://example.test/mcp', { headers: { 'oai-authenticated-user-id': 'owner' } }), environment)).status, 405);
   assert.equal((await hosted.fetch(request('{}', { 'content-type': 'text/plain', 'oai-authenticated-user-id': 'owner' }), environment)).status, 415);
-  assert.equal((await hosted.fetch(request('x'.repeat(128001)), environment)).status, 413);
+  assert.equal((await hosted.fetch(request('x'.repeat(32 * 1024 * 1024 + 1)), environment)).status, 413);
   const privateEnvironment = { DB: binding, TRUST_PRIVATE_SITE: 'true' };
   const discovery = request(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }), { 'content-type': 'application/json' });
   assert.equal((await hosted.fetch(discovery, privateEnvironment)).status, 200);
@@ -37,6 +37,13 @@ test('D1 executes workspace operations and guarded atomic transactions', async (
     const body = await response.json() as { result: { tools?: unknown[]; isError?: boolean; structuredContent?: { notes: number } } };
     if (method === 'tools/list') assert.ok((body.result.tools?.length ?? 0) >= 4);
     else { assert.notEqual(body.result.isError, true); assert.equal(body.result.structuredContent?.notes, 0); }
+  }
+  const listing = await hosted.fetch(request(JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/list' })), environment);
+  const names = ((await listing.json()) as { result: { tools: { name: string }[] } }).result.tools.map(tool => tool.name);
+  assert.deepEqual(names, ['open', 'write', 'recall', 'status', 'list', 'read', 'export', 'app']);
+  for (const name of ['status', 'workspace_status']) {
+    const result = await hosted.fetch(request(JSON.stringify({ jsonrpc: '2.0', id: 3, method: 'tools/call', params: { name, arguments: {} } })), environment);
+    assert.notEqual(((await result.json()) as { result: { isError?: boolean } }).result.isError, true);
   }
   const store = new D1Store(binding);
   let next = 0;
@@ -113,6 +120,29 @@ test('D1 executes workspace operations and guarded atomic transactions', async (
   })));
   assert.ok(attempts.some(count => count > 1));
   assert.equal((await db.prepare("SELECT count(*) AS n FROM major_meta WHERE key LIKE 'concurrent-%'").first<{ n: number }>())?.n, 2);
+
+  for (const [canonical, legacy, args] of [
+    ['open', 'workspace_open', {}], ['write', 'workspace_note', { text: 'Alias continuity' }],
+    ['recall', 'workspace_recall', {}], ['status', 'workspace_status', {}],
+    ['list', 'workspace_list', { limit: 1 }], ['read', 'workspace_get', { id: first.id }],
+    ['export', 'workspace_export', {}], ['app', 'workspace_app', {}],
+  ] as const) {
+    for (const name of [canonical, legacy]) {
+      const response = await hosted.fetch(request(JSON.stringify({ jsonrpc: '2.0', id: 9, method: 'tools/call', params: { name, arguments: args } })), environment);
+      const body = await response.json() as { result: { isError?: boolean; content: { text?: string }[] } };
+      assert.notEqual(body.result.isError, true, `${name}: ${body.result.content[0].text}`);
+    }
+  }
+  const longText = ` \n\t${'🌌α\n'.repeat(450000)}\n \t `;
+  assert.ok(Buffer.byteLength(longText, 'utf8') > 2_000_000);
+  const longWrite = await hosted.fetch(request(JSON.stringify({ jsonrpc: '2.0', id: 10, method: 'tools/call', params: { name: 'write', arguments: { text: longText } } })), environment);
+  const written = (await longWrite.json()) as { result: { isError?: boolean; structuredContent: { id: string } } };
+  assert.notEqual(written.result.isError, true);
+  const longRead = await hosted.fetch(request(JSON.stringify({ jsonrpc: '2.0', id: 11, method: 'tools/call', params: { name: 'read', arguments: { id: written.result.structuredContent.id } } })), environment);
+  const read = (await longRead.json()) as { result: { structuredContent: { record: { text: string } } } };
+  assert.equal(read.result.structuredContent.record.text, longText);
+  const finalArtifact = await workspace.export();
+  assert.ok((await (await workspace.download(finalArtifact.id)).text()).includes(longText));
 
   for (const [message, shouldRetry] of [['CHECK constraint failed: transaction_snapshot_current', true], ['ambiguous transport failure', false]] as const) {
     let calls = 0;
