@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { cpSync, readFileSync, rmSync } from 'node:fs';
+import './sync-site-core.mjs';
 const root = new URL('../', import.meta.url);
 const manifest = readFileSync(new URL('.openai/hosting.json', root), 'utf8');
 if (manifest !== readFileSync(new URL('site/.openai/hosting.json', root), 'utf8')) throw new Error('Root and site hosting identities differ');

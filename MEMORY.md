@@ -110,3 +110,13 @@ Hierarchy, per `NOTEPAD.md`: `AGENTS.md` → `NOTEPAD.md` → `CONTEXT.md` → `
 - A schema probe with the Site service credential returned HTTP 401 at dispatch for `server/discover` and `tools/list`; do not treat that as an MCP-handler test or infer a server defect. Current chat tool registry lacked workspace tools after retry.
 - No user MCP call, cross-chat note recovery, cloud D1 persistence, or actual account cost is confirmed.
 - Source update procedure: use the supported Site source helper in a separate scratch checkout; overlay the canonical GitHub `main` archive while preserving `mirror.git`; build/package/push there. Keep both hosting manifests identical, preserve plugin/App IDs, and do not merge or force-push the separate histories. See `plugin/README.md`.
+
+## `p3-published-2026-11-01` — full visibility without a replacement backend
+
+**Status:** OBSERVED by root through native deployment and plugin readback, plus local integration tests.
+
+P3 uses the same Site, D1 database and owner authentication. Eight MCP tools include baseline open/note/recall/status and list/get/export/app. Exact records and row locators include idless tables. Export atomically materializes all applicable major/minor rows in the existing database; generated artifacts, duplicate FTS tables and the transient transaction guard are explicitly excluded. Manifest counts and a completion footer make omissions detectable. V2 JSON metadata retains exact text including trailing newlines; source excerpts are separate immutable rows. The new migration adds tables only.
+
+Current deployment, source, release, App entrypoint and URLs are in [plugin/connection.json](plugin/connection.json). Plugin v1.1.0 skills, shared contract and manifest were read back. The 16-test suite, typecheck, code-size budget and hosted build pass. Synthetic browser host controls passed, but native signed-in ChatGPT App rendering and new live tool calls are not proven by that fixture. Existing live status calls reach persistent records; no source notes were written by root in this release session.
+
+GitHub main is canonical. An old master default hid the implementation in ordinary clones; synchronizing that existing branch is compatibility, not a second development lane. Source mirrors retain separate Git histories. Runtime data and secrets are never repository components.

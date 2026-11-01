@@ -10,6 +10,7 @@ const schema = readFileSync(new URL('../src/store/migrations/0001.sql', import.m
 function setup() {
   const db = new SQLiteDatabase();
   db.migrate(schema);
+  db.migrate(readFileSync(new URL('../src/store/migrations/0003.sql', import.meta.url), 'utf8'));
   let sequence = 0;
   const runtime = {
     id: (prefix: string) => `${prefix}_${String(++sequence).padStart(6, '0')}`,
@@ -134,7 +135,21 @@ test('MCP discovery, tool listing, and tool calls expose the workspace contract'
   const discover = await request('server/discover');
   assert.ok(discover.result.capabilities.tools);
   const listing = await request('tools/list');
-  assert.deepEqual(listing.result.tools.map((tool: { name: string }) => tool.name), ['workspace_open', 'workspace_note', 'workspace_recall', 'workspace_status']);
+  for (const name of ['workspace_open', 'workspace_note', 'workspace_recall', 'workspace_status']) assert.ok(listing.result.tools.some((tool: { name: string }) => tool.name === name));
+  const app = listing.result.tools.find((tool: { name: string }) => tool.name === 'workspace_app');
+  const uri = app._meta.ui.resourceUri;
+  assert.match(uri, /^ui:\/\//);
+  assert.deepEqual(app._meta['openai/ui'].entrypoints.map((entry: { type: string }) => entry.type), ['global', 'thread']);
+  const resources = await request('resources/list');
+  assert.ok(resources.result.resources.some((resource: { uri: string }) => resource.uri === uri));
+  const resource = await request('resources/read', { uri });
+  assert.equal(resource.result.contents[0].mimeType, 'text/html;profile=mcp-app');
+  assert.match(resource.result.contents[0].text, /data-transport="mcp"/);
+  const script = resource.result.contents[0].text.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+  assert.ok(script);
+  assert.doesNotThrow(() => new Function(script));
+  const opened = await request('tools/call', { name: 'workspace_app', arguments: {} });
+  assert.notEqual(opened.result.isError, true);
   const saved = await request('tools/call', { name: 'workspace_note', arguments: { text: 'MCP working note' } });
   assert.match(saved.result.content[0].text, /Saved/);
   const recalled = await request('tools/call', { name: 'workspace_recall', arguments: { query: 'working' } });

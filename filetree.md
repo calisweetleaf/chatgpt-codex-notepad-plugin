@@ -1,6 +1,6 @@
 # File Tree: chatgpt-codex-notepad-plugin
 
-**Updated:** 2026-10-31
+**Updated:** 2026-11-01
 **Root Path:** `/workspace/scratch/b5bc4e96f6a6/chatgpt-codex-notepad-plugin`
 
 Birds-eye map. Each line says what a path is and where it leads; it does not restate the contents.
@@ -8,10 +8,16 @@ Enter at [AGENTS.md](AGENTS.md) §12 → [CONTEXT.md](CONTEXT.md) → the surfac
 
 ```
 ├── docs
+│   ├── CUSTOM_INSTRUCTIONS.md    compact text the operator explicitly applies in ChatGPT settings
 │   ├── proposals
 │   │   ├── PROPOSAL.md          input 1 (CBCW) — historical; adopted/rejected parts in SPEC §2
 │   │   └── PROPOSAL_2.md        input 2 (Research Ledger) — historical; same
 │   └── SPEC.md                  the design → §3 platform facts · §5 schemas · §8 tools · §15 phases · §16 acceptance
+├── WORKSPACE_CONTRACT.md         material categories, fidelity rules, and open/recall/inspect/note/revisit/export behavior
+├── drizzle
+│   ├── 0000_workspace.sql        initial Sites D1 schema copy
+│   ├── 0001_operator_visibility.sql additive excerpt/export tables
+│   └── meta/_journal.json        Drizzle migration journal
 ├── potential                    quarantine: candidate Adab modules, reference only, never imported
 │   ├── knowledge_integration.py reject — knowledge-graph ingestion (spacy, networkx)
 │   ├── knowledge_library.py     concept only — symbolic handles, echo detection
@@ -26,12 +32,21 @@ Enter at [AGENTS.md](AGENTS.md) §12 → [CONTEXT.md](CONTEXT.md) → the surfac
 ├── scripts
 │   ├── build.mjs                clean source build and copy migrations to dist
 │   ├── build-hosted.mjs          verifies hosting identity and builds/copies the Sites artifact
+│   ├── docsnagv2.py              standalone docs extraction utility; not an app runtime dependency
+│   ├── requirements-docsnag.txt  Python dependencies for the standalone docs utility
+│   ├── pack-plugin.mjs           stages local plugin package content, including contract and skills
+│   ├── sync-site-core.mjs        copies root source into ignored site/workspace-generated for Site builds
 │   └── count-lines.mjs          enforces the handwritten test/source line budget
 ├── src
+│   ├── app
+│   │   └── view.ts              native MCP App and private Site operator inspector HTML
 │   ├── core
+│   │   ├── inspection.ts        authenticated list/get and immutable export snapshot logic
 │   │   └── workspace.ts         note/session/thread and recall engine
+│   ├── app
+│   │   └── view.ts              native MCP App inspector UI and hosted operator view
 │   ├── mcp
-│   │   └── server.ts            four tool schemas, validation, dispatch, JSON-RPC routing
+│   │   └── server.ts            eight tool schemas, MCP App resource, validation and JSON-RPC routing
 │   ├── local
 │   │   └── stdio.ts             JSONL stdin/stdout harness over the internal RPC + SQLite
 │   ├── hosted
@@ -43,27 +58,35 @@ Enter at [AGENTS.md](AGENTS.md) §12 → [CONTEXT.md](CONTEXT.md) → the surfac
 │       └── migrations
 │           └── 0001.sql         initial major/minor schema, FTS triggers, indexes, session state
 │           └── 0002.sql         D1 transaction guard and revision schema
+│           └── 0003.sql         additive source excerpt and operator export tables
 ├── site
 │   ├── app/page.tsx              minimal Cognitive Workspace service landing page
 │   ├── app/mcp/route.ts          dispatches GET/POST to src/hosted/index.ts
+│   ├── app/[...workspace]/route.ts catch-all for generated shared hosted handler routes
 │   ├── app/chatgpt-auth.ts       Sites identity helper
-│   ├── db/                       D1 binding/schema scaffold
+│   ├── lib/connector-contract.mts Sites connector contract helper
+│   ├── db/                       D1 binding + starter schema only; numbered root SQL migrations are authoritative
 │   ├── drizzle/0000_workspace.sql schema-only D1 migration copy
+│   ├── drizzle/0001_operator_visibility.sql additive source/export schema copy
+│   ├── drizzle/meta/_journal.json Drizzle migration journal
 │   ├── worker/index.ts           Vinext Worker entry
-│   ├── scripts/                  Sites install/build/preview lifecycle helpers
+│   ├── scripts/workspace-dev.mjs syncs shared source before local Site development
+│   ├── workspace-generated/      ignored build/preview copy generated from root src/
 │   ├── .openai/hosting.json       registered Sites identity and D1 binding manifest
 │   ├── package.json              Sites app dependencies and local commands
 │   ├── pnpm-lock.yaml            locked scaffold dependencies
 │   └── README.md                 Site identity, route/build and source-mirror handoff
 ├── plugin
 │   ├── README.md                 published Site/plugin identities and mirror update workflow
-│   ├── plugin.json                Plugin Creator manifest, release v1.0.1
+│   ├── plugin.json                local package manifest v1.1.0; published release remains v1.0.1
 │   ├── .app.json                  canonical App connection binding
 │   ├── .codex-plugin/plugin.json  Codex plugin manifest
 │   ├── connection.json            non-secret Site/plugin IDs, URLs, version, source
-│   └── skills/                    usage and curator skills overlaid by Plugin Creator
+│   ├── WORKSPACE_CONTRACT.md      contract included in local v1.1.0 package candidate
+│   └── skills/                    local usage and curator skill copies for the next package
 ├── test
 │   ├── d1.test.ts               Workerd D1 + HTTP owner-gate/list/status tests
+│   ├── operator.test.ts         source excerpt, pagination, exact get, export fidelity/ownership tests
 │   └── workspace.test.ts        SQLite behavior + in-process MCP RPC coverage
 ├── skills                       role instructions → see skills/README.md
 │   ├── README.md                which skill for which audience
@@ -85,7 +108,7 @@ Enter at [AGENTS.md](AGENTS.md) §12 → [CONTEXT.md](CONTEXT.md) → the surfac
 
 ## Remaining implementation and deployment surfaces
 
-The core, stores, four-tool MCP server, local stdio harness, hosted entry, and Sites route/build bridge are present. Root reports 13 local tests and the hosted build pass. Site `appgprj_6ae661d0968081918d8c386d729f1c8c` is published at `https://somnus-cognitive-workspace.daeronsomnus.chatgpt.site`; deployment/version/source and canonical plugin release IDs are in `plugin/README.md`. Live MCP schema/HTTP behavior and cross-chat note recovery remain unverified. The Site migration file is a schema copy; do not infer cloud migration state from it.
+The baseline core, stores, eight MCP tools, local stdio harness, hosted entry, and Sites bridge are present. Root reports 16 tests, typecheck, line budget, and hosted build passing. Site `appgprj_6ae661d0968081918d8c386d729f1c8c` is published; deployment/version/source and canonical plugin release IDs are in `plugin/README.md`. P3 list/get/export, excerpt storage, and inspector UI are local. The browser preview reached `/operator` but returned 403 without owner identity; no visual/native host rendering is claimed. The deployed plugin remains v1.0.1; the local v1.1.0 package candidate is unpublished. `WORKSPACE_CONTRACT.md` and `docs/CUSTOM_INSTRUCTIONS.md` define workflow; repository source is not evidence that the deployed plugin exposes it.
 
 ## Deployment handoff surfaces
 

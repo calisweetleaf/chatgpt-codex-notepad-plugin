@@ -1,0 +1,14 @@
+import { cpSync,existsSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const plugin=path.join(root,'plugin');
+const output=process.argv[2];
+if (!output||!path.isAbsolute(output)||!output.endsWith('.tar.gz')||!path.relative(plugin,output).startsWith('..')) throw new Error('Provide an absolute .tar.gz destination outside plugin/.');
+for (const name of ['cognitive-workspace-usage','cognitive-workspace-curator']) cpSync(path.join(root,'skills',name),path.join(plugin,'skills',name),{recursive:true});
+cpSync(path.join(root,'WORKSPACE_CONTRACT.md'),path.join(plugin,'WORKSPACE_CONTRACT.md'));
+for (const name of ['plugin.json','.app.json','.codex-plugin/plugin.json']) if (!existsSync(path.join(plugin,name))) throw new Error('Missing canonical plugin file: '+name);
+const result=spawnSync('tar',['-czf',output,'-C',plugin,'plugin.json','.app.json','.codex-plugin','WORKSPACE_CONTRACT.md','skills'],{stdio:'inherit'});
+if(result.status!==0)process.exit(result.status??1);
+console.log(output);

@@ -1,6 +1,6 @@
 # CONTEXT.md: Current state index
 
-**Updated:** 2026-10-31
+**Updated:** 2026-11-01
 **Purpose:** compact routing keys so a fresh agent can orient in one read. Deep material lives in [MEMORY.md](MEMORY.md); live working state in [NOTEPAD.md](NOTEPAD.md); next actions in [TASK.md](TASK.md); design in [docs/SPEC.md](docs/SPEC.md).
 
 Keep entries short and keyed. If an entry needs a paragraph, it belongs in `MEMORY.md` and this file should hold the key plus one line.
@@ -9,12 +9,13 @@ Keep entries short and keyed. If an entry needs a paragraph, it belongs in `MEMO
 
 ## Current gate
 
-- **Gate:** P0, the hosted vertical slice on ChatGPT Sites ([TASK.md](TASK.md) → P0).
+- **Gate:** P3 full-visibility workflow upgrade ([TASK.md](TASK.md) → P3); root owns implementation, backend/MCP schemas, App UI, and deployment.
 - **Expected verdict:** a note written in one ChatGPT chat is recoverable from a different chat, and Codex sees the same workspace.
-- **Last observed verdict:** Site publication succeeded. Project `appgprj_6ae661d0968081918d8c386d729f1c8c` is live at [somnus-cognitive-workspace.daeronsomnus.chatgpt.site](https://somnus-cognitive-workspace.daeronsomnus.chatgpt.site), deployment `appgdep_6ae662c153f481918c6aa28f86909e99`, version `appgprj_6ae661d0968081918d8c386d729f1c8c~appgver_10a9a41eeeac8191bba2ff6672ea46a5`, source `0c1527ced06a2681d3adc0d957818e624c06b952`, MCP enabled, env revision 1. Plugin Creator provisioned and installed canonical app `plugin_asdk_app_sites_09950ef599088191a5e6c9569f8c7dae`; release `pluginrel_6ae66309e2b88191b922c50853ac4d5d` is v1.0.1, and deployed skill readback was verified. A schema probe using the Site service credential received HTTP 401 at dispatch for `server/discover` and `tools/list`; this does not establish a server defect or exercise MCP handling. The current chat tool registry did not show workspace tools after retry. Cross-chat note recovery is still untested.
-- **Validation report:** root reran all 13 tests locally, including Workerd D1 and HTTP owner-gate/list/status coverage; typecheck and line budget pass (457 application lines, 234 test lines). Root also reports clean `npm pack` install with `--omit=dev` outside the repo and two compiled stdio processes persisting/retrieving through numbered migrations. These results do not establish cloud D1 or Sites behavior.
-- **Deployment:** publishing and canonical plugin provisioning succeeded; root is syncing the source repository to `main`. The operator can test the installed plugin, but no cross-chat persistence result is recorded yet.
-- **Next action:** user performs a fresh-chat plugin availability and note→recall check; record outcomes without inferring server behavior from the service-credential 401 or missing current-chat tool listing. Root is syncing GitHub `main`. Preserve the separate Site source mirror workflow described in `plugin/README.md`.
+- **Last observed verdict:** the Site is live at [somnus-cognitive-workspace.daeronsomnus.chatgpt.site](https://somnus-cognitive-workspace.daeronsomnus.chatgpt.site). Canonical plugin `plugin_asdk_app_sites_09950ef599088191a5e6c9569f8c7dae` release v1.1.0 (`pluginrel_6ae6bb003ae081919df592906c550291`) is published; manifest, contract, and both skill contents were read back. The current ChatGPT registry still exposes only the four earlier tools, so the upgraded list/get/export calls have not been observed live. Earlier service-credential probes returned HTTP 401 at dispatch and do not diagnose the MCP handler. Live note/export calls and cross-chat recovery remain untested.
+- **Validation report:** root reports 16 tests passing, including >1 MB exports, Unicode/fence handling, original-hash preservation, D1 concurrent guard retry, all eight tools/resource, auth, and download. Typecheck, budget, and hosted build pass. A synthetic MCP browser fixture exercised timeline, inspector, threads, graph, and export UI. The local `/operator` preview returned 403 without owner identity; no production visual pass or signed-in native App rendering is claimed.
+- **Deployment:** plugin v1.1.0 and the final Site source patch are published. The manifest, contract, and usage/curator skill contents were read back. Refreshed Site and plugin identifiers are kept in [`plugin/connection.json`](plugin/connection.json). Current registry visibility and live upgraded operations remain to be retested; no cross-chat persistence result is recorded.
+- **Next action:** verify that a fresh chat advertises the updated tools, then exercise note/list/get/export and cross-chat recall. Preserve the Site source mirror workflow in `plugin/README.md`.
+- **P3 workflow:** local source exposes eight tools and the inspector resource. Activity is explicit read/write tool invocations and filing receipts, not passive conversation capture. List `remaining` excludes the returned page; cursor ceiling excludes later appends but does not freeze existing mutable fields; exports are immutable snapshots. Root observed 47 notes/26 threads after deployment, unchanged from the predeployment count, with last write `2026-11-01T03:50:34.459Z`. Root reports no notes were written during deployment; no per-note hash verification is claimed.
 
 ## Authoritative surfaces
 
@@ -25,6 +26,8 @@ Keep entries short and keyed. If an entry needs a paragraph, it belongs in `MEMO
 | `board` | P0 to P6 with lane assignment. | [TASK.md](TASK.md) |
 | `map` | Birds-eye tree with routing hints. | [filetree.md](filetree.md) |
 | `skills` | usage (ChatGPT, ships with plugin), curator (Codex), builder (implementers). | [skills/](skills/README.md) |
+| `workflow-contract` | Source/excerpt/note/derived distinctions, fidelity boundaries, and inspection workflow. | [WORKSPACE_CONTRACT.md](WORKSPACE_CONTRACT.md) |
+| `chatgpt-instructions` | Compact text the operator applies in settings; repository files are not auto-loaded. | [docs/CUSTOM_INSTRUCTIONS.md](docs/CUSTOM_INSTRUCTIONS.md) |
 | `quarantine` | `potential/` is reference only. Verdicts per module in SPEC §9.1. | [MEMORY.md](MEMORY.md) → `potential-verdicts` |
 
 ## Architecture keys
@@ -33,7 +36,8 @@ Keep entries short and keyed. If an entry needs a paragraph, it belongs in `MEMO
 | --- | --- |
 | `major-invariant` | `major` note text is never rewritten by curation, rebuild, or sync. Only operator redaction, which tombstones. |
 | `store-split` | Two logical stores, hard boundary, no cross-store FK or query. Two physical DBs where the platform allows; prefixed tables where it does not. |
-| `tool-surface` | Six planned tools; current server exposes `workspace_open`, `workspace_note`, `workspace_recall`, and `workspace_status`. `workspace_link`/`workspace_curate` are planned P3. `text` is the only required write field; writes return a filing receipt. |
+| `tool-surface` | Local source exposes eight tools: baseline open/note/recall/status plus `workspace_list`, `workspace_get`, `workspace_export`, `workspace_app`. The published plugin can lag; use only its advertised tools. `workspace_link`/`workspace_curate` remain separate planned curation capabilities. |
+| `material-types` | Preserve operator excerpts, assistant-authored notes, and derived summaries as distinct forms. Labels aid reading; they do not prove truth or confidence. See [WORKSPACE_CONTRACT.md](WORKSPACE_CONTRACT.md). |
 | `binding` | Server-minted sessions. No ChatGPT conversation id is assumed. Best-guess filing + visible receipt + one-call refile; strict mode is config. |
 | `no-verification` | Operator doctrine: this is not a fact checker. No epistemic status, no evidence requirement, no scoring of note content. See `MEMORY.md` → `doctrine-no-verification`. |
 | `runtime` | One TypeScript core, two hosts. `src/core` holds no platform APIs. |
@@ -63,4 +67,4 @@ Keep entries short and keyed. If an entry needs a paragraph, it belongs in `MEMO
 
 ## Re-entry route
 
-`AGENTS.md` §12 → `CONTEXT.md` (this file) → `TASK.md` current gate → `NOTEPAD.md` newest entries → `docs/SPEC.md` section named by the task → `MEMORY.md` key if a decision looks surprising.
+`AGENTS.md` §12 → `CONTEXT.md` (this file) → `TASK.md` P3 → `NOTEPAD.md` newest entries → [WORKSPACE_CONTRACT.md](WORKSPACE_CONTRACT.md) → `docs/CUSTOM_INSTRUCTIONS.md` if installing the ChatGPT workflow → current MCP tool schemas.

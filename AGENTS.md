@@ -14,7 +14,7 @@
 
 > **Workspace operating contract for Factory, Codex, and any other implementation agent.**
 >
-> **Project status:** specification complete; the Sites deployment and canonical private plugin are published. The package/config scaffold, numbered migrations, SQLite and D1 stores, workspace core, MCP schema/dispatcher, local stdio harness, hosted entry, source-only build packaging, and Sites app are present. Site project `appgprj_6ae661d0968081918d8c386d729f1c8c` is live at `https://somnus-cognitive-workspace.daeronsomnus.chatgpt.site`; canonical plugin ID `plugin_asdk_app_sites_09950ef599088191a5e6c9569f8c7dae` is provisioned. Root reports all 13 local tests, typecheck, line budget, clean packed install, subprocess persistence checks, and hosted build passing. Live MCP tool handling and cross-chat recovery remain unverified. See §12 and `CONTEXT.md`.
+> **Project status:** the final Sites source patch and canonical private plugin v1.1.0 are published. P3 inspection/export, excerpts, eight-tool MCP schema, and inspector App are in source. Root reports 16 tests, typecheck, line budget, and hosted build passing. Plugin manifest, contract, and both skill contents were read back. The current chat registry still exposes only the four earlier tools, so live upgraded calls/export and cross-chat recovery remain unverified. A synthetic MCP browser fixture exercised timeline, inspector, threads, graph, and export UI; production/native App rendering is not verified. The local `/operator` preview returned 403 without owner identity. See §12, `CONTEXT.md`, and `TASK.md` P3.
 > **Primary user:** ChatGPT itself; Codex and other agents are secondary clients.
 > **First deliverable:** `SPEC.md`, produced only after reading both existing proposals. *(Delivered: [`docs/SPEC.md`](docs/SPEC.md). Next work is tracked in [`TASK.md`](TASK.md).)*
 
@@ -25,6 +25,7 @@ For current implementation work:
 1. Read this file, [`CONTEXT.md`](CONTEXT.md), the relevant sections of [`docs/SPEC.md`](docs/SPEC.md), [`TASK.md`](TASK.md), and [`skills/cognitive-workspace-builder/SKILL.md`](skills/cognitive-workspace-builder/SKILL.md).
 2. Treat [`docs/proposals/PROPOSAL.md`](docs/proposals/PROPOSAL.md) and [`docs/proposals/PROPOSAL_2.md`](docs/proposals/PROPOSAL_2.md) as reconciled historical inputs. Their comparison and the first specification are complete; do not restart that cycle unless the operator supplies a new design input or decision.
 3. Implement against `docs/SPEC.md` and the active phase in `TASK.md`. Record newly observed platform constraints while building and keep claims about deployment and client behavior explicitly unverified until exercised.
+4. For ChatGPT conversation use, `AGENTS.md` and other repository files are **not automatically loaded**. The operator must explicitly apply [`docs/CUSTOM_INSTRUCTIONS.md`](docs/CUSTOM_INSTRUCTIONS.md) in ChatGPT's custom instructions. Read [`WORKSPACE_CONTRACT.md`](WORKSPACE_CONTRACT.md) when changing model-facing workflow or fidelity rules.
 
 **The initial specification was completed 2026-10-31. Do not present an earlier assistant's proposal as authoritative merely because it has more detail.** This project was reset around the operator's narrower purpose below.
 
@@ -346,6 +347,9 @@ Each surface has one job. Read the one the task points at; do not read everythin
 | [`NOTEPAD.md`](NOTEPAD.md) | Live, append-only working state while you work. | Starting work, hitting evidence that changes your model, failing informatively, handing off. |
 | [`CONTEXT.md`](CONTEXT.md) | Compact current keys: gate, hazards, deferred queue, open questions. | Re-entry; one read to orient. |
 | [`MEMORY.md`](MEMORY.md) | Durable findings with provenance: verified facts, rejected designs, doctrine, rationale. | Something looks surprising, or you are about to re-derive a decision. |
+| [`WORKSPACE_CONTRACT.md`](WORKSPACE_CONTRACT.md) | Material types, fidelity boundaries, and the open → recall → inspect → note → revisit workflow. | Changing agent behavior, note fidelity, inspection, or export expectations. |
+| [`docs/CUSTOM_INSTRUCTIONS.md`](docs/CUSTOM_INSTRUCTIONS.md) | Compact text the operator can apply in ChatGPT settings; not auto-loaded from this repository. | Installing the conversational workflow in ChatGPT. |
+| P3 full-visibility upgrade | Root owns inventory/full-record/export backend, MCP schemas, App UI, and deployment; docs lane maintains the contract and usage/curator guidance. | See [TASK.md](TASK.md) P3 and the connected server's tool registry. |
 | [`skills/`](skills/README.md) | Role instructions: plugin usage (ChatGPT), curation (Codex), building (implementers). | Before writing code, or before using the plugin in conversation. |
 | `package.json`, `package-lock.json`, `tsconfig.json` | TypeScript ESM build and development setup. | Local build and typecheck. |
 | `src/core/workspace.ts` | Workspace note/session/thread and recall engine. | Core implementation. |
@@ -355,8 +359,8 @@ Each surface has one job. Read the one the task points at; do not read everythin
 | `site/` | Vinext/Cloudflare Sites app, MCP route bridge, Worker and D1 scaffolding. | Published Site project ID/URL and version are in `CONTEXT.md`; cloud persistence remains unverified. |
 | `plugin/` | Plugin Creator manifests, skill copies, and deployment/source-mirror handoff. | Canonical plugin is provisioned/installed; preserve its existing App ID on refresh. See `plugin/README.md`. |
 | `src/store/` | Database contract, SQLite/D1 adapters, and numbered migrations. | Local Workerd tests pass per root; cloud D1 behavior is unobserved. |
-| `test/` | SQLite workspace/MCP tests and D1 adapter/HTTP tests. | Root reports all 13 tests pass locally; no cloud deployment evidence. |
-| `scripts/` | Build packaging and handwritten test/source line budget. | Source-only build copies migrations; root reports packed install succeeds. |
+| `test/` | SQLite workspace/MCP tests and D1 adapter/HTTP tests. | Root reports 16 local tests pass; cloud/live plugin behavior remains unverified. |
+| `scripts/` | Build, Site source sync, plugin packaging, docs utility, and handwritten test/source line budget. | Root reports hosted build and budget pass. |
 
 Hierarchy per `NOTEPAD.md`: `AGENTS.md` → `NOTEPAD.md` → `CONTEXT.md` → `MEMORY.md`.
 

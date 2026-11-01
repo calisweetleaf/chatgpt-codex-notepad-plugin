@@ -11,6 +11,7 @@
 
 # Generated builds and framework state
 /dist/
+/workspace-generated/
 /.next/
 /.vinext/
 /out/

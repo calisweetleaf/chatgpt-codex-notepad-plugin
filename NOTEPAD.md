@@ -910,3 +910,41 @@ Track code landing from the implementation owners → update the task checklist 
 - Canonical Site plugin was already installed. Plugin Creator updated it to 1.0.1 and read-back verified both usage and curator skills with the existing App binding preserved. No duplicate plugin was created.
 - Local exact hosted migration, HTTP checks, and core suite pass (13 tests). A service-access live HTTP probe returned 401 at dispatch. Current chat has no workspace tools in its registry. Do not claim a live note write/recall or cross-chat continuity test; the next fresh chat with the plugin selected is the real user acceptance test.
 - Canonical source is GitHub `main`. New agents should clone with `--branch main`; use root AGENTS, CONTEXT, TASK, and site/README. Sites has a separate source mirror: open it with the supported helper and overlay canonical source rather than merging/force-pushing histories. Hosting cost remains unobserved.
+
+## 2026-11-01 | Codex | P3 full-visibility documentation | OPEN
+
+- **Assigned lane:** docs only. Create `WORKSPACE_CONTRACT.md` and compact `docs/CUSTOM_INSTRUCTIONS.md`; update `AGENTS.md` pointers and root/plugin usage and curator skills. Root owns the list/get/export backend, MCP/App UI, deployment, and source mirror.
+- **Goal:** active use flow is open → recall → inspect/list/get → note → revisit. Distinguish operator-provided excerpts, assistant-authored working notes, and derived summaries. Preserve faithful context and narrative movement; avoid flattened/caveman summaries. Do not add fact-checking or verification policing.
+- **Starting evidence from root:** live status tool returned 44 notes, 23 threads, last write `2026-11-01T03:20:21.457Z` before this root session. No fresh acceptance behavior claimed by this docs lane.
+- **Constraints:** do not suggest ChatGPT auto-reads `AGENTS.md`; compact custom instructions must be explicitly installed/applied. No separate skill product requested. GitHub default branch was `master`; root is synchronizing existing history to new canonical `main` for clone compatibility.
+- **Role/tool note:** read the uploaded `defense-grade-doc-engine (3).md`. It specifies Surgeon/Colony calls unavailable in this session; continue with available documentation edit tooling without claiming those calls. Keep claims source-backed and unknowns explicit.
+- **Re-entry:** [WORKSPACE_CONTRACT.md](WORKSPACE_CONTRACT.md), [docs/CUSTOM_INSTRUCTIONS.md](docs/CUSTOM_INSTRUCTIONS.md), then usage/curator skills and root `AGENTS.md` / `TASK.md`.
+
+### 2026-11-01 | P3 documentation pass | IN PROGRESS
+
+- `WORKSPACE_CONTRACT.md` defines excerpt/source, assistant note, and derived summary handling; faithful context and the open → recall → inspect → note → revisit → export workflow; and the no-verification boundary.
+- `docs/CUSTOM_INSTRUCTIONS.md` is a compact user-applied ChatGPT prompt. It explicitly says this repository and `AGENTS.md` are not auto-loaded.
+- Root and plugin usage/curator skill copies now describe the source-level eight-tool schema and use `workspace_list`, `workspace_get`, `workspace_export`, and `workspace_app` only when advertised. `workspace_note.sources` stores excerpts separately.
+- Source inspection confirms native resource `ui://cognitive-workspace/inspector`, `/operator`, `/api/workspace`, and `/exports/:id/download`. These are local source facts; the current deployed plugin may lag.
+- `prod_finalizer` reports 15 local tests, typecheck, and line budget pass, including RPC/HTTP coverage. No real MCP host rendering or upgraded plugin-release verification is recorded. This docs lane ran no tests and used no native Site/Plugin APIs.
+- **Next:** root validates and deploys the P3 release; update exact status after reports. Operator cross-chat acceptance remains separate. Do not create a separate skill product.
+
+### 2026-11-01 | P3 docs sync | PREPUBLICATION FREEZE
+
+- `OBSERVED (root report)` — 16 tests pass, typecheck and handwritten line budget pass, and hosted build succeeds. Reported coverage includes >1 MB export, Unicode/fence behavior, original-hash preservation, D1 concurrent guard retry, all eight tools/resource, authentication, and download.
+- `OBSERVED (root report)` — source build/dev wrappers now sync root `src/` into ignored `site/workspace-generated/`; Site package declares `ulid` directly. Source map now includes inspector UI, inspection core, migration 0003, Sites catch-all/connector helper/dev wrapper, package and sync scripts, docs utility, and local plugin contract.
+- `OBSERVED (root report)` — browser preview reached `/operator` but got 403 without owner identity. This is not a visual rendering or native MCP host verification. The deployed release is still plugin v1.0.1; local 1.1.0 candidate is not published. Root owns publication and will append exact outcome identifiers.
+- `PRESERVE` — Activity records explicit invoked reads/writes and filing receipts, not passive conversation capture. Pagination `remaining` excludes the returned page; cursor ceiling excludes later appends but does not freeze mutable fields. Export is an immutable snapshot.
+- `DO` — documentation is synced and frozen for the source helper. Do not claim upgraded release, live tool registry, cross-chat recovery, or host rendering until root reports direct evidence.
+
+### 2026-11-01 | P3 root acceptance and publication | COMPLETE WITH CLIENT LIMITS
+
+- Corrects the prepublication freeze above: same private Site now runs P3. Final source `905afadf071c439e7398a186780b2da4e9c4299b`, deployment `appgdep_6ae6bcf6b2508191b8bd6ee1aa613d18`, version `appgprj_6ae661d0968081918d8c386d729f1c8c~appgver_024f22cf04d48191a14930ba99e5fb41`; native status succeeded with MCP enabled and env revision 1. Existing project, D1 binding, private audience and authentication retained. Migrations are additive; no source records rewritten/deleted.
+- Canonical installed plugin updated to v1.1.0, release `pluginrel_6ae6bb003ae081919df592906c550291`. Readback confirms manifest, WORKSPACE_CONTRACT and both skills; App binding retained. Runtime core remains shared; site/ and plugin/ are authored components in canonical GitHub main.
+- Root independently ran all 16 tests, typecheck, line budget (668 application/363 test lines) and hosted build successfully after final patch. Cases cover original tools, exact/idless inspection, Unicode/code fences/BLOBs, >1MB export, count manifests, source hashes, authentication, immutable repeat downloads, pagination and concurrent D1 transaction guard retry.
+- Export v2 retains note text in complete JSON metadata as well as literal Markdown text, making trailing newlines recoverable; v1 downloads retain their old bytes. Authenticated downloadable artifact is materialized server-side in the existing database. Excluded tables are explicit in its manifest.
+- Browser test used an isolated synthetic MCP host fixture with no real research data: timeline, exact inspector, thread navigation, graph and export controls exercised. Fixture removed before packaging. This does not prove native ChatGPT App rendering. Unauthenticated /operator correctly returned 403. Signed-in cloud browser required login and was not bypassed.
+- The running chat registry still exposes the original four tools; upgraded live App/export interactions and cross-chat recovery require a fresh client registry. No fabricated acceptance claim. Live status is checked separately after publication; root wrote no research notes.
+- GitHub default branch was master at an old specification-only commit, causing incomplete normal clones. Root will fast-forward that existing branch to the canonical main snapshot without force; development remains main. Future source pushes use expected-head leases. Cached/generated output, credentials and runtime records remain excluded.
+
+- Post-deployment live status returned 47 notes, 26 threads and lastWrite `2026-11-01T03:50:34.459Z`, matching the predeployment status. This is availability/count evidence, not a per-note live hash audit.

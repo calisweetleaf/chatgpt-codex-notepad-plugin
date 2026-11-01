@@ -1,4 +1,5 @@
 import type { Database, Row } from '../store/database.js';
+import { Inspection, type ListInput, type GetInput } from './inspection.js';
 
 type Client = 'chatgpt' | 'codex' | 'local' | 'other';
 type Move = 'continue' | 'branch' | 'pivot' | 'return' | 'park' | 'close';
@@ -7,6 +8,7 @@ export interface NoteInput {
   kind?: string; emphasis?: number; about?: string[]; refs?: string[];
   idempotency_key?: string;
   links?: { to: string; relation: string }[];
+  sources?: { text: string; locator?: string }[];
 }
 export interface RecallInput {
   session?: string; query?: string; thread?: string; about?: string;
@@ -14,6 +16,7 @@ export interface RecallInput {
   budget?: number; depth?: 'brief' | 'full';
 }
 export interface Runtime {
+  baseUrl?: string;
   id(prefix: string): string;
   now(): string;
   hash(text: string): Promise<string>;
@@ -24,6 +27,13 @@ const moves = new Set(['continue', 'branch', 'pivot', 'return', 'park', 'close']
 /** Model-facing continuity semantics. No host or filesystem APIs. */
 export class Workspace {
   private lastClock = '000000000000000:0000000000:host';
+  list(input: ListInput = {}) { return new Inspection(this.db,this.principal,this.runtime).list(input); }
+  get(input: GetInput) { return new Inspection(this.db,this.principal,this.runtime).get(input); }
+  export() { return new Inspection(this.db,this.principal,this.runtime).export(); }
+  download(id: string) { return new Inspection(this.db,this.principal,this.runtime).download(id); }
+  activity(operation: string, receipt: string) {
+    return this.db.transaction(() => this.db.run('INSERT INTO major_activity VALUES(?,?,?,?,?)',this.runtime.id('a'),this.runtime.now(),this.principal,operation,receipt));
+  }
   constructor(private db: Database, private runtime: Runtime,
     private principal: string, private client: Client = 'chatgpt',
     private timezone = 'America/Chicago', private strictBinding = false) {
@@ -190,6 +200,10 @@ export class Workspace {
         await this.db.run('INSERT OR IGNORE INTO major_mentions VALUES(?,?,?)', id, handle.id, 'detected');
       for (const locator of input.refs ?? []) await this.db.run('INSERT INTO major_refs VALUES(?,?,?,?,?,?)', this.runtime.id('r'), id, /^https?:/.test(locator) ? 'url' : locator.startsWith('repo:') ? 'repo' : 'other', locator, null, now);
       await this.event('note.append', id, { thread: thread!.id, session: session.id }, now);
+      for (const source of input.sources ?? []) {
+        if (!source.text || source.text.length > 128000) throw new Error('Source excerpt must contain 1–128000 characters');
+        await this.db.run('INSERT INTO major_sources VALUES(?,?,?,?,?,?)',this.runtime.id('v'),id,source.text,source.locator ?? null,now,this.principal);
+      }
       const duplicate = await this.one('SELECT id FROM major_notes WHERE content_hash=? AND id<>? AND recorded_at>=? LIMIT 1', hash, id, new Date(Date.parse(now) - 86400000).toISOString());
       return { id, session: session.id, thread: thread!.id,
         text: `Saved ${id} to thread "${thread!.title}" (session ${session.id}).${duplicate ? ` Duplicate text also recorded as ${duplicate.id}.` : ''}` };

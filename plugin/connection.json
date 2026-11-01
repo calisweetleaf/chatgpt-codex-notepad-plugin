@@ -4,9 +4,10 @@
   "mcp_url": "https://somnus-cognitive-workspace.daeronsomnus.chatgpt.site/mcp",
   "plugin_id": "plugin_asdk_app_sites_09950ef599088191a5e6c9569f8c7dae",
   "plugin_url": "https://chatgpt.com/plugins/plugin_asdk_app_sites_09950ef599088191a5e6c9569f8c7dae",
-  "plugin_version": "1.0.1",
-  "plugin_release_id": "pluginrel_6ae66309e2b88191b922c50853ac4d5d",
-  "deployment_id": "appgdep_6ae662c153f481918c6aa28f86909e99",
-  "site_version_id": "appgprj_6ae661d0968081918d8c386d729f1c8c~appgver_10a9a41eeeac8191bba2ff6672ea46a5",
-  "site_source_commit": "0c1527ced06a2681d3adc0d957818e624c06b952"
+  "plugin_version": "1.1.0",
+  "plugin_release_id": "pluginrel_6ae6bb003ae081919df592906c550291",
+  "deployment_id": "appgdep_6ae6bcf6b2508191b8bd6ee1aa613d18",
+  "site_version_id": "appgprj_6ae661d0968081918d8c386d729f1c8c~appgver_024f22cf04d48191a14930ba99e5fb41",
+  "site_source_commit": "905afadf071c439e7398a186780b2da4e9c4299b",
+  "app_entrypoint": "https://chatgpt.com/plugins/plugin_asdk_app_sites_09950ef599088191a5e6c9569f8c7dae/app/workspace_app"
 }

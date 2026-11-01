@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "dev-09950ef599088191a5e6c9569f8c7dae",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Private conversation continuity and research notepad for ChatGPT.",
   "author": {
     "name": "App developer"

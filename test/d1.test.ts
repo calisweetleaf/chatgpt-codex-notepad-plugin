@@ -5,16 +5,18 @@ import { createHash } from 'node:crypto';
 import { Miniflare } from 'miniflare';
 import { D1Store, type D1Binding } from '../src/store/d1.js';
 import { Workspace } from '../src/core/workspace.js';
+import type { Row, Value } from '../src/store/database.js';
 import hosted from '../src/hosted/index.js';
 
 test('D1 executes workspace operations and guarded atomic transactions', async (t) => {
   const mf = new Miniflare({ modules: true, script: 'export default { fetch() { return new Response("ok") } }', d1Databases: ['DB'], compatibilityDate: '2025-01-01' });
   t.after(() => mf.dispose());
   const db = await mf.getD1Database('DB');
-  const migration = readFileSync(new URL('../drizzle/0000_workspace.sql', import.meta.url), 'utf8');
-  await db.batch(migration.split('--> statement-breakpoint').map(sql => sql.trim()).filter(Boolean).map(sql => db.prepare(sql)));
-  const journal = JSON.parse(readFileSync(new URL('../drizzle/meta/_journal.json', import.meta.url), 'utf8'));
-  assert.equal(journal.entries[0].tag, '0000_workspace');
+  const journal = JSON.parse(readFileSync(new URL('../drizzle/meta/_journal.json', import.meta.url), 'utf8')) as { entries: { tag: string }[] };
+  for (const entry of journal.entries) {
+    const migration = readFileSync(new URL(`../drizzle/${entry.tag}.sql`, import.meta.url), 'utf8');
+    await db.batch(migration.split('--> statement-breakpoint').map(sql => sql.trim()).filter(Boolean).map(sql => db.prepare(sql)));
+  }
   const binding = db as unknown as D1Binding;
   const environment = { DB: binding, OWNER_USER_ID: 'owner', WORKSPACE_TIMEZONE: 'UTC' };
   const request = (body: string, headers: Record<string, string> = { 'content-type': 'application/json', 'oai-authenticated-user-id': 'owner' }) =>
@@ -33,7 +35,7 @@ test('D1 executes workspace operations and guarded atomic transactions', async (
     const response = await hosted.fetch(request(JSON.stringify({ jsonrpc: '2.0', id: 1, method, params: { name: 'workspace_status', arguments: {} } })), environment);
     assert.equal(response.status, 200);
     const body = await response.json() as { result: { tools?: unknown[]; isError?: boolean; structuredContent?: { notes: number } } };
-    if (method === 'tools/list') assert.equal(body.result.tools?.length, 4);
+    if (method === 'tools/list') assert.ok((body.result.tools?.length ?? 0) >= 4);
     else { assert.notEqual(body.result.isError, true); assert.equal(body.result.structuredContent?.notes, 0); }
   }
   const store = new D1Store(binding);
@@ -50,6 +52,45 @@ test('D1 executes workspace operations and guarded atomic transactions', async (
   assert.notEqual(branch.thread, first.thread);
   assert.match((await workspace.recall({ query: 'quasar' })).text, /Quasar detour/);
   assert.equal((await db.prepare('SELECT count(*) AS n FROM major_handles').first<{ n: number }>())?.n, 1);
+  const artifact = await workspace.export();
+  assert.equal(artifact.manifest.counts.major_notes, 3);
+  const download = await (await workspace.download(artifact.id)).text();
+  assert.match(download, /Original continuity/);
+  assert.match(download, /Quasar detour/);
+  assert.match(download, /complete snapshot/);
+  const endpoint = `https://example.test/exports/${artifact.id}/download`;
+  const get = (identity?: string) => new Request(endpoint, { headers: identity ? { 'oai-authenticated-user-id': identity } : {} });
+  assert.equal((await hosted.fetch(get(), environment)).status, 403);
+  assert.equal((await hosted.fetch(get('intruder'), environment)).status, 403);
+  const response = await hosted.fetch(get('owner'), environment);
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get('content-type') ?? '', /text\/markdown/);
+  assert.equal(await response.text(), download);
+  const ui = await hosted.fetch(new Request('https://example.test/operator', { headers: { 'oai-authenticated-user-id': 'owner' } }), environment);
+  assert.equal(ui.status, 200);
+  assert.match(await ui.text(), /data-transport="http"/);
+  const alias = await hosted.fetch(new Request('https://example.test/api/workspace', { method: 'POST', headers: { 'oai-authenticated-user-id': 'owner', 'content-type': 'application/json' }, body: JSON.stringify({ name: 'workspace_list', arguments: { limit: 1 } }) }), environment);
+  assert.equal(alias.status, 200);
+  assert.equal(((await alias.json()) as { structuredContent: { records: unknown[] } }).structuredContent.records.length, 1);
+  let resume!: () => void, reached!: () => void, paused = false;
+  const snapshotGate = new Promise<void>(resolve => { resume = resolve; });
+  const ready = new Promise<void>(resolve => { reached = resolve; });
+  class PausedStore extends D1Store {
+    override async all<T extends Row = Row>(sql: string, ...values: Value[]): Promise<T[]> {
+      const rows = await super.all<T>(sql, ...values);
+      if (!paused && sql.includes('count(*) AS count FROM "major_notes"')) { paused = true; reached(); await snapshotGate; }
+      return rows;
+    }
+  }
+  let ids = 0;
+  const clock = { id: (prefix: string) => `${prefix}_race_${++ids}`, now: () => '2026-11-01T12:00:00.000Z', hash: async (text: string) => createHash('sha256').update(text).digest('hex') };
+  const exporting = new Workspace(new PausedStore(binding), clock, 'owner', 'chatgpt', 'UTC').export();
+  await ready;
+  await new Workspace(new D1Store(binding), clock, 'owner', 'chatgpt', 'UTC').note({ text: 'Committed during export' });
+  resume();
+  const concurrent = await exporting;
+  assert.equal(concurrent.manifest.counts.major_notes, 4);
+  assert.match(await (await workspace.download(concurrent.id)).text(), /Committed during export/);
   await assert.rejects(workspace.note({ text: 'Should roll back', links: [{ to: 'missing', relation: 'elaborates' }] }));
   assert.equal((await db.prepare("SELECT count(*) AS n FROM major_notes WHERE text='Should roll back'").first<{ n: number }>())?.n, 0);
 
