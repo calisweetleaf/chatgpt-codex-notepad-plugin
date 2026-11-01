@@ -948,3 +948,5 @@ Track code landing from the implementation owners → update the task checklist 
 - GitHub default branch was master at an old specification-only commit, causing incomplete normal clones. Root will fast-forward that existing branch to the canonical main snapshot without force; development remains main. Future source pushes use expected-head leases. Cached/generated output, credentials and runtime records remain excluded.
 
 - Post-deployment live status returned 47 notes, 26 threads and lastWrite `2026-11-01T03:50:34.459Z`, matching the predeployment status. This is availability/count evidence, not a per-note live hash audit.
+
+- GitHub main and existing default master were fast-forwarded to the same P3 snapshot; remote tree matched local exactly, including executable helper permissions. README now maps editable components and corrects the historical six-tool design list to the implemented eight-tool surface.

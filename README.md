@@ -8,7 +8,18 @@ A persistent external notepad for ChatGPT (and Codex), exposed as an MCP server.
 
 Site ID: `appgprj_6ae661d0968081918d8c386d729f1c8c`; URL: `https://somnus-cognitive-workspace.daeronsomnus.chatgpt.site`. Canonical plugin ID `plugin_asdk_app_sites_09950ef599088191a5e6c9569f8c7dae`; v1.1.0 release `pluginrel_6ae6bb003ae081919df592906c550291`. Current Site deployment identifiers are maintained in [`plugin/connection.json`](plugin/connection.json). The Sites route at `site/app/mcp/route.ts` invokes `src/hosted/index.ts`, and `scripts/build-hosted.mjs` builds the Site artifact while checking the root and Site hosting manifests match.
 
-The P3 full-visibility upgrade is implemented and its plugin release published. Root reports 16 passing tests, typecheck, line budget, and hosted build. A synthetic MCP browser fixture exercised the App views. The local `/operator` preview returned 403 without owner identity, so there is no production/signed-in native App rendering claim. Current tool registry visibility and live upgraded calls remain unverified.
+## Editable components
+
+| Path | Responsibility |
+| --- | --- |
+| [`src/app/view.ts`](src/app/view.ts) | Native MCP App and hosted inspector UI: timeline, explorer, exact notes, activity, graph and export. |
+| [`src/core/inspection.ts`](src/core/inspection.ts) | Exact reads, pagination and immutable full-database Markdown export. |
+| [`src/mcp/server.ts`](src/mcp/server.ts) / [`src/hosted/index.ts`](src/hosted/index.ts) | Tool schemas, App resource, authenticated HTTP/MCP routes and download endpoint. |
+| [`site/`](site/) | Sites scaffold, auth integration, routes, migrations, build and preview scripts. |
+| [`plugin/`](plugin/) | Installed plugin manifests, skill copies, contract and deployment identifiers. |
+| [`scripts/docsnagv2.py`](scripts/docsnagv2.py) | Documentation capture utility; Python dependencies in `scripts/requirements-docsnag.txt`. |
+
+The native App entrypoint is [Research workspace](https://chatgpt.com/plugins/plugin_asdk_app_sites_09950ef599088191a5e6c9569f8c7dae/app/workspace_app); the same inspector is served at authenticated `/operator`. See [WORKSPACE_CONTRACT.md](WORKSPACE_CONTRACT.md) for exact tool contracts. Generated build output, caches, credentials and runtime database files are excluded from Git. Build with `npm run build:hosted`; package the plugin with `node scripts/pack-plugin.mjs /absolute/path/plugin.tar.gz` after installing dependencies. Development stays on `main`; the existing default `master` branch is synchronized for ordinary clones.
 
 ## Documents
 
@@ -34,7 +45,7 @@ The P3 full-visibility upgrade is implemented and its plugin release published. 
 
 - **Hosted first** on ChatGPT Sites (MCP server + D1), with an opt-in npm local companion (`cwp`).
 - **Two stores:** `major` holds the append-only conversational trajectory; `minor` holds rebuildable summaries, collections, and indexes.
-- **Six tools:** `workspace_open`, `workspace_note`, `workspace_recall`, `workspace_link`, `workspace_curate`, `workspace_status`. A normal write needs only `text`.
+- **Eight implemented tools:** `workspace_open`, `workspace_note`, `workspace_recall`, `workspace_status`, `workspace_list`, `workspace_get`, `workspace_export`, `workspace_app`. A normal write needs only `text`; link/curate tools remain planned.
 - **Not** a fact checker, a transcript recorder, or a replacement for other memory systems.
 
 This repository is a private development workspace. The deployed service does not depend on Git or on this repository.
